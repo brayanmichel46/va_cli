@@ -1,0 +1,74 @@
+<div class="row animated fadeIn">
+    <div class="col-md-6 col-sm-6">
+        <div class="card">
+            <div class="card-body">
+
+                <input #input (keyup)="buscarUsuario( input.value )" type="text" class="form-control" placeholder="Buscar usuario...">
+
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row animated fadeIn" *ngIf="cargando">
+    <div class="col-sm-12">
+        <div class="alert alert-warning text-center">
+            <strong>Cargando</strong>
+            <br>
+            <i class="fa fa-refresh fa-spin fa-2x"></i>
+            <br>
+            <strong>Espere por favor</strong>
+        </div>
+    </div>
+</div>
+<div class="row animated fadeIn" *ngIf="!cargando">
+    <div class="col-md-12 col-sm-12">
+        <div class="card">
+            <div class="card-body">
+
+                <h3>Usuario registrados ( <small>{{totalRegistros}}</small> )</h3>
+                <table class="table table-hover">
+                    <thead>
+                        <th>Imagen</th>
+                        <th>Correo</th>
+                        <th>Nombre</th>
+                        <th>Role</th>
+                        <th>Auth</th>
+                        <th>Estado</th>
+                        <th></th>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let usuario of usuarios" [ngClass]="{'table-warning':usuario.estado==='I'}">
+                            <td>
+                                <img (click)="mostrarModal(usuario.id_usuario)" [src]="usuario.img | imagen" class="img50 img-circle pointer">
+                            </td>
+                            <td>{{usuario.email}}</td>
+                            <td>{{usuario.nombre }}</td>
+                            <td>
+                                <p *ngFor="let role of usuario.SegRoleUsuarios">{{role.SegRole.descripcion}}</p>
+                            </td>
+                            <td>
+                                <label *ngIf="usuario.google" class="label label-danger">Google</label>
+                                <label *ngIf="!usuario.google" class="label label-info">Normal</label>
+                            </td>
+                            <td>{{usuario.estado}}</td>
+                            <td>
+                                <button class="btn btn-success">
+                                    <li class="fa fa-save"></li>
+                                </button>
+                                <button (click)='desactivarUsuario(usuario)' [disabled]="usuario.estado==='I'" class="btn btn-warning">
+                                    <li class="fa fa-ban"></li>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button (click)="cambiarDesde('A')" class="btn btn-secondary">
+                    Anteriores
+                </button>
+                <button (click)="cambiarDesde('S')" class="btn btn-secondary">
+                    Siguientes
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
