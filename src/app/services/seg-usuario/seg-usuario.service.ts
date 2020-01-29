@@ -76,10 +76,11 @@ export class SegUsuarioService {
     });
   }
   actualizarUsuario( datos: any ) {
-
+    console.log(datos);
     let url = URL_SERVICIOS + '/seguridad/actualizarusuario?token=' + this.token;
     return this.http.post(url, datos)
     .map((resp: any) => {
+      console.log(resp);
       let usuarioDB: SegUsuario = resp.usuario;
       this.guardarStorage( usuarioDB.id_usuario.toString() , this.token, usuarioDB);
       Swal('Usuario actualizado', usuarioDB.nombre, 'success');

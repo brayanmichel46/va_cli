@@ -43,7 +43,7 @@ export class ProfileComponent implements OnInit {
       return;
     }
     if ( archivo.type.indexOf('image') < 0 ) {
-      Swal('Solo imagenes', 'El archivo seleccionado no es una imaen', 'error');
+      Swal('Solo imagenes', 'El archivo seleccionado no es una imagen', 'error');
       this.imagenSubir = null;
       return;
     }
