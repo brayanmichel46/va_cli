@@ -1,3 +1,5 @@
+import { FacturarComponent } from './facturar/facturar.component';
+import { ClientesComponent } from './clientes/clientes.component';
 import { RouterModule, Routes } from '@angular/router';
 
 import { PagesComponent } from './pages.component';
@@ -10,7 +12,6 @@ import { RxjsComponent } from './rxjs/rxjs.component';
 import { LoginGuardGuard } from '../services/service.index';
 import { ProfileComponent } from './profile/profile.component';
 import { UsuariosComponent } from './usuarios/usuarios.component';
-
 const pagesRoutes: Routes = [
     {
         path: '',
@@ -28,6 +29,11 @@ const pagesRoutes: Routes = [
             /* @description: Rutas de mantenimiento
             */
            { path: 'usuarios', component: UsuariosComponent, data: { titulo: 'Usuarios' } },
+           { path: 'clientes', component: ClientesComponent, data: { titulo: 'clientes' } },
+           /**
+            /* @description: Rutas de ventas
+            */
+           { path: 'facturar', component: FacturarComponent, data: { titulo: 'Facturar' } },
             { path: '', redirectTo: '/dashboard', pathMatch: 'full' }
         ]
     }

@@ -22,6 +22,13 @@ export class SidebarService {
         { titulo: 'Personas', url: '/personas' },
         { titulo: 'Clientes', url: '/clientes' }
       ]
+    },
+    {
+      titulo: 'Ventas',
+      icon: 'mdi mdi-folder-lock-open',
+      submenu: [
+        { titulo: 'Facturar', url: '/facturar' },
+      ]
     }
   ];
   constructor() { }

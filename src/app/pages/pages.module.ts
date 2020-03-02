@@ -3,7 +3,7 @@ import { PAGES_ROUTES } from './pages.routes';
 
 import { SharedModule } from '../shared/shared.module';
 
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 // ng2 - charts
 import { ChartsModule } from 'ng2-charts';
@@ -25,6 +25,11 @@ import { ProfileComponent } from './profile/profile.component';
 import { CommonModule } from '@angular/common';
 import { UsuariosComponent } from './usuarios/usuarios.component';
 import { ModalUploadImagenComponent } from '../components/modal-upload-imagen/modal-upload-imagen.component';
+import { ClientesComponent } from './clientes/clientes.component';
+import { FacturarComponent } from './facturar/facturar.component';
+//ng bootstrap
+import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+
 
 
 
@@ -42,7 +47,9 @@ import { ModalUploadImagenComponent } from '../components/modal-upload-imagen/mo
         RxjsComponent,
         ProfileComponent,
         UsuariosComponent,
-        ModalUploadImagenComponent
+        ModalUploadImagenComponent,
+        ClientesComponent,
+        FacturarComponent
     ],
     exports: [
         DashboardComponent,
@@ -54,8 +61,10 @@ import { ModalUploadImagenComponent } from '../components/modal-upload-imagen/mo
         SharedModule,
         PAGES_ROUTES,
         FormsModule,
+        ReactiveFormsModule,
         ChartsModule,
         PipesModule
+        //NgbModule
     ]
 })
 

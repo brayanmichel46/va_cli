@@ -88,7 +88,7 @@ export class SegUsuarioService {
     });
   }
   cambiarImagen( archivo: File, id: string ) {
-    console.log('llega23');
+
     this._subirArchivoService.subirArchivo(archivo, 'usuarios', id, this.token)
     .then((resp: any) => {
       console.log(resp);
@@ -111,7 +111,6 @@ export class SegUsuarioService {
   desactivarUsuario( id_usuario: number ) {
     let usuario = {
       id_usuario: id_usuario,
-      estado: 'I'
     };
     let url = URL_SERVICIOS + '/seguridad/desactivarusuario?token=' + this.token;
     return this.http.post(url, usuario);

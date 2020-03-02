@@ -8,7 +8,8 @@ import {
    GenPersonaService,
    SegUsuarioService,
    LoginGuardGuard,
-   SubirArchivoService
+   SubirArchivoService,
+   CliClienteService
 } from './service.index';
 import { ModalUploadImagenService } from '../components/modal-upload-imagen/modal-upload-imagen.service';
 @NgModule({
@@ -24,7 +25,8 @@ import { ModalUploadImagenService } from '../components/modal-upload-imagen/moda
     SegUsuarioService,
     LoginGuardGuard,
     SubirArchivoService,
-    ModalUploadImagenService
+    ModalUploadImagenService,
+    CliClienteService
   ],
   declarations: []
 })
