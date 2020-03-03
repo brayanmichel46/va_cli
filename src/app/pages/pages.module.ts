@@ -28,7 +28,9 @@ import { ModalUploadImagenComponent } from '../components/modal-upload-imagen/mo
 import { ClientesComponent } from './clientes/clientes.component';
 import { FacturarComponent } from './facturar/facturar.component';
 //ng bootstrap
-import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+//import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
+import {AutocompleteLibModule} from 'angular-ng-autocomplete';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
 
 
 
@@ -63,8 +65,8 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
         FormsModule,
         ReactiveFormsModule,
         ChartsModule,
-        PipesModule
-        //NgbModule
+        PipesModule,
+        AutocompleteLibModule
     ]
 })
 
