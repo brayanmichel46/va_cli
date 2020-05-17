@@ -1,39 +1,98 @@
-<div class="card-body">
-  <div class="ng-autocomplete">
-    <ng-autocomplete
-      [data]="data"
-      [searchKeyword]="keyword"
-      (selected)='selectEvent($event)'
-      (inputChanged)='onChangeSearch($event)'
-      (inputFocused)='onFocused($event)'
-      [itemTemplate]="itemTemplate"
-      [notFoundTemplate]="notFoundTemplate">
-    </ng-autocomplete>
-
-    <ng-template #itemTemplate let-item>
-    <a [innerHTML]="item.name"></a>
-    </ng-template>
-
-    <ng-template #notFoundTemplate let-notFound>
-    <div [innerHTML]="notFound"></div>
-    </ng-template>
-    </div>
-<!-- <input id="typeahead-basic" type="text" class="form-control" [(ngModel)]="model" [ngbTypeahead]="search"/> -->
-<hr>
-<pre>Model: {{ model | json }}</pre>
-  <form action="#">
+<div class="card">
+  <div class="card-header bg-info">
+    <h4 class="m-b-0 text-white">Factura</h4>
+  </div>
+  <div class="card-body">
+    <form ngNativeValidate [formGroup]="clienteForm" (ngSubmit)="createClient()" action="#">
       <div class="form-body">
-          <h3 class="card-title">Datos generales</h3>
-          <hr>
-          <div class="row p-t-20">
-              <div class="col-md-6">
-                  <div class="form-group">
-                      <label class="control-label">Cedula</label>
-                      <input type="text" id="firstName" class="form-control" placeholder="Digite cedula">
-                      <small class="form-control-feedback"> Digite la cedula </small> </div>
-              </div>
+        <h3 class="card-title">Datos generales</h3>
+        <hr>
+        <div class="row p-t-1">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">Cedula cliente</label>
+
+              <ng-autocomplete formControlName="identificacion" [data]="clientes" [searchKeyword]="keyword"
+                (selected)='selectEvent($event,1)' (inputChanged)='onChangeSearch($event,1)'
+                (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplate" [notFoundTemplate]="notFoundTemplate"
+                (ngModel)="clienteSeleccionado">
+              </ng-autocomplete>
+
+              <ng-template #itemTemplate let-item>
+                <a [innerHTML]="'<b>'+item.identificacion+' </b>'+item.nombre"></a>
+              </ng-template>
+
+              <ng-template #notFoundTemplate let-notFound>
+                <div [innerHTML]="notFound"></div>
+              </ng-template>
+              <small *ngIf="clienteForm.controls['identificacion'].errors?.required" class="text-warning">
+                Identificacion es requerida
+              </small>
+            </div>
           </div>
-          <!--/row-
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">Nombre</label>
+              <input type="text" id="nombre" formControlName="nombre"
+                [ngClass]="{'form-control': true,'warning-input': !clienteForm.get('nombre').valid}"
+                placeholder="Digite nombre">
+              <small *ngIf="clienteForm.controls['nombre'].errors?.required" class="text-warning">
+                Nombre es requerido
+              </small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">email</label>
+              <input type="text" id="email" formControlName="email"
+                [ngClass]="{'form-control': true,'error-input': !clienteForm.get('email').valid}"
+                placeholder="Digite email">
+              <small *ngIf="clienteForm.controls['email'].invalid" class="text-danger">
+                Error en email
+              </small>
+              <!-- <small class="form-control-feedback">{{ getError('email')}}</small> -->
+            </div>
+          </div>
+        </div>
+        <div class="row p-t-1">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">direccion</label>
+              <input type="text" id="direccion" formControlName="direccion"
+                [ngClass]="{'form-control': true,'error-input': !clienteForm.get('direccion').valid}"
+                placeholder="Digite direccion">
+              <small *ngIf="clienteForm.controls['direccion'].invalid" class="text-danger">
+                Error en la direccion
+              </small>
+              <!-- <small class="form-control-feedback">{{ getError('direccion')}}</small> -->
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">celular</label>
+              <input type="text" id="celular" formControlName="celular"
+                [ngClass]="{'form-control': true,'error-input': !clienteForm.get('celular').valid}"
+                placeholder="Digite celular">
+              <small *ngIf="clienteForm.controls['celular'].invalid" class="text-danger">
+                Error en celular
+              </small>
+              <!-- <small class="form-control-feedback">{{ getError('celular')}}</small> -->
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">telefono</label>
+              <input type="text" id="telefono" formControlName="telefono"
+                [ngClass]="{'form-control': true,'error-input': !clienteForm.get('telefono').valid}"
+                placeholder="Digite telefono">
+              <small *ngIf="clienteForm.controls['telefono'].invalid" class="text-danger">
+                Error en telefono
+              </small>
+              <!-- <small class="form-control-feedback">{{ getError('telefono')}}</small> -->
+            </div>
+          </div>
+        </div>
+        <!--/row-
           <div class="row">
               <div class="col-md-6">
                   <div class="form-group has-success">
@@ -135,8 +194,161 @@
           </div>-->
       </div>
       <div class="form-actions">
-          <button type="submit" class="btn btn-success"> <i class="fa fa-check"></i> Save</button>
-          <button type="button" class="btn btn-inverse">Cancel</button>
+        <button type="submit" class="btn btn-rounded btn-success" *ngIf="!clienteSeleccionado"
+          [disabled]="clienteForm.invalid"> <i class="fa fa-check"></i> Crear cliente</button>
+        <button type="button" class="btn btn-rounded btn-info" *ngIf="clienteSeleccionado" (click)="updateClient()"
+          [disabled]="clienteForm.invalid"><i class="fa fa-pencil"></i> Actualizar cliente</button>
       </div>
-  </form>
+    </form>
+    <form ngNativeValidate [formGroup]="datosGeneralesForm" action="#">
+      <div class="form-body">
+        <div class="row p-t-1">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="control-label">Transporte</label>
+              <input type="text" id="transporte" formControlName="transporte"
+                [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('transporte').valid}"
+                placeholder="Digite transporte" (change)="changeDatosGenerales()">
+              <small *ngIf="datosGeneralesForm.controls['transporte'].errors?.required" class="text-warning">
+                Transporte es requerido
+              </small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="control-label">Descuento</label>
+              <input type="text" id="descuento" formControlName="descuento"
+                [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('descuento').valid}"
+                placeholder="Digite descuento" (change)="changeDatosGenerales()">
+              <small *ngIf="datosGeneralesForm.controls['descuento'].errors?.required" class="text-warning">
+                Descuento es requerido
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+  </div>
 </div>
+
+<div class="card">
+  <div class="card-header bg-info">
+    <h4 class="m-b-0 text-white">Nuevo Item</h4>
+  </div>
+  <div class="card-body">
+    <form ngNativeValidate [formGroup]="invSucursalForm" (ngSubmit)="addItemFactura()" action="#">
+
+      <div class="form-body">
+        <h3 class="card-title">Datos</h3>
+        <hr>
+        <div class="row p-t-1">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">Nuevo item</label>
+
+              <ng-autocomplete formControlName="descripcion" [data]="invSucursal" [searchKeyword]="keywordInvSucursal"
+                (selected)='selectEvent($event,2)' (inputChanged)='onChangeSearch($event,2)'
+                (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplateinv"
+                [notFoundTemplate]="notFoundTemplateinv">
+              </ng-autocomplete>
+
+              <ng-template #itemTemplateinv let-item>
+                <a [innerHTML]="'<b>'+item.codigo+' </b>'+item.descripcion"></a>
+              </ng-template>
+
+              <ng-template #notFoundTemplateinv let-notFound>
+                <div [innerHTML]="notFound"></div>
+              </ng-template>
+              <small *ngIf="invSucursalForm.controls['descripcion'].errors?.required" class="text-warning">
+                Inventario requerido
+              </small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">Codigo</label>
+              <input type="text" id="codigo" formControlName="codigo" [ngClass]="{'form-control': true}"
+                placeholder="Digite codigo" disabled="true">
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">Cantidad Item</label>
+              <input type="text" id="cantidad_item" formControlName="cantidad_item"  [ngClass]="{'form-control': true,'warning-input': (!invSucursalForm.get('cantidad_item').valid || !cantidadValida())}"
+                placeholder="Digite cantidad">
+            </div>
+          </div>
+        </div>
+        <div class="row p-t-1" formArrayName="parametros">
+          <div *ngFor="let p of getParametros.controls;let i= index" class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">Parametro</label>
+              <input type="number" class="form-control" formControlName="{{i}}" [ngClass]="{'form-control': true,'warning-input': !invSucursalForm.get('parametros').get(''+i).valid}">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="form-actions">
+        <!-- [disabled]="invSucursalForm.invalid" -->
+        <button type="submit" class="btn btn-rounded btn-success"> <i class="fa fa-check"></i> Añadir item</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body">
+
+    <!--  <h3>Clientes registrados ( <small>{{totalRegistros}}</small> )</h3> -->
+    <h4># Articulos: ( <small>{{totales.cantidad_items}}</small> )</h4>
+    <h4>Sub Total: ( <small>{{totales.sub_total}}</small> )</h4>
+    <h4>Vr Transporte: ( <small>{{totales.transporte}}</small> )</h4>
+    <h4>Vr Descuento : ( <small>{{totales.vr_descuento}}</small> )</h4>
+    <h4>Vr antes de iva: ( <small>{{totales.vr_antes_iva}}</small> )</h4>
+    <h4>Vr de iva: ( <small>{{totales.vr_iva}}</small> )</h4>
+    <h4>Total F: ( <small>{{totales.total}}</small> )</h4>
+    <div class="table-responsive m-t-20">
+      <table class="table table-hover">
+        <thead>
+          <th>cantidad</th>
+          <th>codigo</th>
+          <th>descripcion</th>
+          <th>Vr Unitario</th>
+          <th>Subtotal</th>
+          <th>Total</th>
+          <th></th>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of itemsFactura">
+            <td>{{item.cantidad_item}}</td>
+            <td>{{item.codigo}}</td>
+            <td>[<span *ngFor="let p of item.parametros;let i = index"><b> {{p}} </b><b
+                  *ngIf="i<item.parametros.length-1"> X </b></span> ] {{item.descripcion}}</td>
+            <td>{{item.sub_total/item.cantidad_item | currency: '$ '}}</td>
+            <td>{{item.sub_total | currency: '$ '}}</td>
+            <td>{{item.total | currency: '$ '}}</td>
+            <td>
+              <button class="btn btn-sm btn-info">
+                <li class="fa fa-edit"></li>
+              </button>
+              <button class="btn btn-sm btn-danger">
+                <li class="fa fa-times"></li>
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- <div class="text-center">
+      <button (click)="cambiarDesde('A')" class="btn btn-success">
+
+        <li class="fa fa-fast-backward"></li>
+      </button>
+      <button (click)="cambiarDesde('S')" class="btn btn-success">
+        <li class="fa fa-fast-forward"></li>
+      </button>
+    </div> -->
+
+  </div>
+</div>
+

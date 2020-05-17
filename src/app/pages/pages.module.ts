@@ -27,47 +27,41 @@ import { UsuariosComponent } from './usuarios/usuarios.component';
 import { ModalUploadImagenComponent } from '../components/modal-upload-imagen/modal-upload-imagen.component';
 import { ClientesComponent } from './clientes/clientes.component';
 import { FacturarComponent } from './facturar/facturar.component';
-//ng bootstrap
-//import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
-import {AutocompleteLibModule} from 'angular-ng-autocomplete';
-import {MatAutocompleteModule} from '@angular/material/autocomplete';
 
-
-
-
+import { AutocompleteLibModule } from 'angular-ng-autocomplete';
 
 @NgModule({
-    declarations: [
-        DashboardComponent,
-        ProgressComponent,
-        Graficas1Component,
-        PagesComponent,
-        IncrementadorComponent,
-        GraficoDonaComponent,
-        AccoutSettingsComponent,
-        PromesasComponent,
-        RxjsComponent,
-        ProfileComponent,
-        UsuariosComponent,
-        ModalUploadImagenComponent,
-        ClientesComponent,
-        FacturarComponent
-    ],
-    exports: [
-        DashboardComponent,
-        ProgressComponent,
-        Graficas1Component
-    ],
-    imports: [
-        CommonModule,
-        SharedModule,
-        PAGES_ROUTES,
-        FormsModule,
-        ReactiveFormsModule,
-        ChartsModule,
-        PipesModule,
-        AutocompleteLibModule
-    ]
+  declarations: [
+    DashboardComponent,
+    ProgressComponent,
+    Graficas1Component,
+    PagesComponent,
+    IncrementadorComponent,
+    GraficoDonaComponent,
+    AccoutSettingsComponent,
+    PromesasComponent,
+    RxjsComponent,
+    ProfileComponent,
+    UsuariosComponent,
+    ModalUploadImagenComponent,
+    ClientesComponent,
+    FacturarComponent
+  ],
+  exports: [
+    DashboardComponent,
+    ProgressComponent,
+    Graficas1Component
+  ],
+  imports: [
+    CommonModule,
+    SharedModule,
+    PAGES_ROUTES,
+    FormsModule,
+    ReactiveFormsModule,
+    ChartsModule,
+    PipesModule,
+    AutocompleteLibModule
+  ]
 })
 
 export class PagesModule { }

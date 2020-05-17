@@ -71,7 +71,7 @@ export class SegUsuarioService {
     let url = URL_SERVICIOS + '/seguridad/crearusuarioweb';
     return this.http.post( url, usuario )
     .map((resp: any) => {
-      Swal('Usuario creado', usuario.email, 'success');
+      Swal.fire('Usuario creado', usuario.email, 'success');
       return resp.usuario;
     });
   }
@@ -83,7 +83,7 @@ export class SegUsuarioService {
       console.log(resp);
       let usuarioDB: SegUsuario = resp.usuario;
       this.guardarStorage( usuarioDB.id_usuario.toString() , this.token, usuarioDB);
-      Swal('Usuario actualizado', usuarioDB.nombre, 'success');
+      Swal.fire('Usuario actualizado', usuarioDB.nombre, 'success');
       return true;
     });
   }
@@ -93,7 +93,7 @@ export class SegUsuarioService {
     .then((resp: any) => {
       console.log(resp);
       this.usuario.img = resp.usuario.img;
-      Swal('Imagen Actualizada', this.usuario.nombre, 'success');
+      Swal.fire('Imagen Actualizada', this.usuario.nombre, 'success');
       this.guardarStorage(id, this.token, this.usuario);
     }).catch(error => {
       console.log(error);

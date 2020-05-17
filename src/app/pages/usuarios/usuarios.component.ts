@@ -71,13 +71,13 @@ export class UsuariosComponent implements OnInit {
   }
   desactivarUsuario ( usuario: SegUsuario ) {
     if (usuario.id_usuario === this._segUsuarioService.usuario.id_usuario) {
-      Swal('No puede desactivar usuario', 'No se puede desactivar a si mismo', 'error');
+      Swal.fire('No puede desactivar usuario', 'No se puede desactivar a si mismo', 'error');
       return;
     }
-    Swal({
+    Swal.fire({
       title: '¿Esta seguro?',
       text: 'Esta a punto de desactivar a ' + usuario.nombre,
-      type: 'warning',
+      icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
@@ -88,7 +88,7 @@ export class UsuariosComponent implements OnInit {
         .subscribe( resp => {
             console.log(resp);
             this.cargarUsuarios();
-            Swal(
+            Swal.fire(
               'Desactivado!',
               'El usuario ha sido desactivado correctamente',
               'success'

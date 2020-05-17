@@ -77,10 +77,10 @@ export class ClientesComponent implements OnInit {
     });
   }
   actualizarCliente(cliente:any){
-    Swal({
+    Swal.fire({
       title: '¿Esta seguro?',
       text: 'Esta a punto de actualizar los datos del cliente: ' + cliente.identificacion,
-      type: 'warning',
+      icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#3085d6',
       cancelButtonColor: '#d33',
@@ -90,7 +90,7 @@ export class ClientesComponent implements OnInit {
         this._cliClienteService.actualizarCliente(cliente).subscribe((clientes: any) => {
           console.log("clientes",clientes);
           this.cargarClientes();
-          Swal('¡Datos Actualizados!',"Cliente: " + cliente.identificacion, 'success');
+          Swal.fire('¡Datos Actualizados!',"Cliente: " + cliente.identificacion, 'success');
 
         });
       }

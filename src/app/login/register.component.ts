@@ -35,7 +35,7 @@ export class RegisterComponent implements OnInit {
       return;
     }
     if ( !this.forma.value.condiciones ) {
-      Swal(
+      Swal.fire(
         'Importante!',
         'Debe aceptar los teminos y condiciones',
         'warning'
