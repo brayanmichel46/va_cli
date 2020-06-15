@@ -200,7 +200,7 @@
           [disabled]="clienteForm.invalid"><i class="fa fa-pencil"></i> Actualizar cliente</button>
       </div>
     </form>
-    <form ngNativeValidate [formGroup]="datosGeneralesForm" action="#">
+    <!--   <form ngNativeValidate [formGroup]="datosGeneralesForm" action="#">
       <div class="form-body">
         <div class="row p-t-1">
           <div class="col-md-6">
@@ -227,28 +227,26 @@
           </div>
         </div>
       </div>
-    </form>
+    </form> -->
   </div>
 </div>
 
 <div class="card">
-  <div class="card-header bg-info">
+  <!--  <div class="card-header bg-info">
     <h4 class="m-b-0 text-white">Nuevo Item</h4>
-  </div>
-  <div class="card-body">
+  </div> -->
+  <div class="card-body" #card_inventario>
     <form ngNativeValidate [formGroup]="invSucursalForm" (ngSubmit)="addItemFactura()" action="#">
 
       <div class="form-body">
-        <h3 class="card-title">Datos</h3>
-        <hr>
         <div class="row p-t-1">
-          <div class="col-md-4">
+          <div class="col-md-6">
             <div class="form-group">
               <label class="control-label">Nuevo item</label>
 
               <ng-autocomplete formControlName="descripcion" [data]="invSucursal" [searchKeyword]="keywordInvSucursal"
-                (selected)='selectEvent($event,2)' (inputChanged)='onChangeSearch($event,2)'
-                (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplateinv"
+                (selected)='selectEvent($event,2)' (inputChanged)='onChangeSearch($event,2)' (inputCleared)="clearedEvente(2)"
+                (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplateinv" [disabled]="editar"
                 [notFoundTemplate]="notFoundTemplateinv">
               </ng-autocomplete>
 
@@ -264,81 +262,151 @@
               </small>
             </div>
           </div>
-          <div class="col-md-4">
+          <!-- <div class="col-md-4">
             <div class="form-group">
               <label class="control-label">Codigo</label>
               <input type="text" id="codigo" formControlName="codigo" [ngClass]="{'form-control': true}"
                 placeholder="Digite codigo" disabled="true">
             </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group">
+          </div> -->
+          <div class="col-md-6">
+            <div class="form-group" *ngIf="!banBtnCambio">
               <label class="control-label">Cantidad Item</label>
-              <input type="text" id="cantidad_item" formControlName="cantidad_item"  [ngClass]="{'form-control': true,'warning-input': (!invSucursalForm.get('cantidad_item').valid || !cantidadValida())}"
+              <input type="number"  formControlName="cantidad_item" step="0.01"
+                [ngClass]="{'form-control': true,'warning-input': (!invSucursalForm.get('cantidad_item').valid || !cantidadValida())}"
                 placeholder="Digite cantidad">
             </div>
           </div>
+
         </div>
-        <div class="row p-t-1" formArrayName="parametros">
-          <div *ngFor="let p of getParametros.controls;let i= index" class="col-md-4">
+        <div class="row p-t-1" formArrayName="parametros" *ngIf="!banBtnCambio">
+          <div *ngFor="let p of getParametros.controls;let i= index" class="col-md-{{(12/getParametros.length)}}">
             <div class="form-group">
               <label class="control-label">Parametro</label>
-              <input type="number" class="form-control" formControlName="{{i}}" [ngClass]="{'form-control': true,'warning-input': !invSucursalForm.get('parametros').get(''+i).valid}">
+              <input type="number" step="0.01" class="form-control" formControlName="{{i}}"
+                [ngClass]="{'form-control': true,'warning-input': (!invSucursalForm.get('parametros').get(''+i).valid || !maxValidoParametro())}">
+            </div>
+          </div>
+        </div>
+        <div class="row p-t-1">
+          <div class="col-md-12 text-center">
+            <div class="form-group">
+              <input formControlName="instalado" id="instalado" type="checkbox" class="filled-in chk-col-light-blue">
+              <label for="instalado"> Instalado </label>
             </div>
           </div>
         </div>
       </div>
-      <div class="form-actions">
+      <div class="form-actions text-center" *ngIf="!editar && !banBtnCambio">
         <!-- [disabled]="invSucursalForm.invalid" -->
-        <button type="submit" class="btn btn-rounded btn-success"> <i class="fa fa-check"></i> Añadir item</button>
+        <button type="submit" class="btn btn-rounded btn-success"
+          [disabled]="invSucursalForm.invalid || !maxValidoParametro()" > <i class="fa fa-check"></i> Añadir</button>
+          <br>
+
       </div>
+
     </form>
+    <div class="text-center" *ngIf="editar && !banBtnCambio">
+      <button (click)="aplitChangueItem('texto')" class="btn btn-rounded btn-success"
+      [disabled]="invSucursalForm.invalid || !maxValidoParametro()"> <i class="fa fa-check"></i> Editar</button>
+    </div>
+    <div class="text-center" *ngIf="banBtnCambio">
+      <button (click)="cambiarItems()" class="btn btn-rounded btn-success"
+      [disabled]="!this.invSucursalSeleccionado"> <i class="fa fa-check"></i> Cambio</button>
+    </div>
   </div>
 </div>
 
 <div class="card">
-  <div class="card-body">
+  <div class="card-body" #table_items>
+
 
     <!--  <h3>Clientes registrados ( <small>{{totalRegistros}}</small> )</h3> -->
-    <h4># Articulos: ( <small>{{totales.cantidad_items}}</small> )</h4>
-    <h4>Sub Total: ( <small>{{totales.sub_total}}</small> )</h4>
-    <h4>Vr Transporte: ( <small>{{totales.transporte}}</small> )</h4>
-    <h4>Vr Descuento : ( <small>{{totales.vr_descuento}}</small> )</h4>
-    <h4>Vr antes de iva: ( <small>{{totales.vr_antes_iva}}</small> )</h4>
-    <h4>Vr de iva: ( <small>{{totales.vr_iva}}</small> )</h4>
-    <h4>Total F: ( <small>{{totales.total}}</small> )</h4>
-    <div class="table-responsive m-t-20">
-      <table class="table table-hover">
+    <input [(ngModel)]="instalado" id="checkbox-signup" type="checkbox" class="filled-in chk-col-light-blue"
+      (change)="changeVrVenta()">
+    <label for="checkbox-signup"> Instalado </label>
+    <h4><b># Articulos=</b><b>[{{totales.cantidad_items }}]</b> <b>Total=[</b><b
+        class="text-error">{{totales.total | currency:'$'}}</b>]
+    </h4>
+    <div class="table-responsive m-t-20" >
+      <table class="table table-striped">
         <thead>
-          <th>cantidad</th>
-          <th>codigo</th>
-          <th>descripcion</th>
+          <th></th>
+          <th>Cant</th>
+          <th><input [(ngModel)]="esCambio" id="checkbox-cambio" type="checkbox" (change)="selectCambio(null)" >
+            <label for="checkbox-cambio"  style="display: inline;"></label>descripcion</th>
           <th>Vr Unitario</th>
           <th>Subtotal</th>
           <th>Total</th>
-          <th></th>
         </thead>
         <tbody>
-          <tr *ngFor="let item of itemsFactura">
-            <td>{{item.cantidad_item}}</td>
-            <td>{{item.codigo}}</td>
-            <td>[<span *ngFor="let p of item.parametros;let i = index"><b> {{p}} </b><b
-                  *ngIf="i<item.parametros.length-1"> X </b></span> ] {{item.descripcion}}</td>
-            <td>{{item.sub_total/item.cantidad_item | currency: '$ '}}</td>
-            <td>{{item.sub_total | currency: '$ '}}</td>
-            <td>{{item.total | currency: '$ '}}</td>
-            <td>
-              <button class="btn btn-sm btn-info">
+
+          <tr *ngFor="let item of itemsFactura;let i=index;">
+            <td class="text-center">
+
+              <button class="btn btn-xs btn-info" (click)="editItem(item)" *ngIf="!banBtnCambio">
                 <li class="fa fa-edit"></li>
               </button>
-              <button class="btn btn-sm btn-danger">
+              <button class="btn btn-xs btn-danger" (click)="deletedItem(item)">
                 <li class="fa fa-times"></li>
               </button>
             </td>
+            <td>{{item.cantidad_item}}</td>
+            <td>
+              <input [(ngModel)]="item.esCambio" id="checkbox-item-{{i}}" type="checkbox" *ngIf="item.cambio=='S'" (change)="selectCambio(item)" >
+              <label for="checkbox-item-{{i}}" style="display: inline;"></label>
+              [<span *ngFor="let p of item.parametros;let i = index"><b> {{p}} </b><b
+                  *ngIf="i<item.parametros.length-1"> X </b></span> ] {{item.codigo}} {{item.descripcion}}</td>
+            <td>{{item.sub_total/item.cantidad_item | currency: '$ '}}</td>
+            <td>{{item.sub_total | currency: '$ '}}</td>
+            <td>{{item.total | currency: '$ '}}</td>
           </tr>
         </tbody>
       </table>
     </div>
+    <form ngNativeValidate [formGroup]="datosGeneralesForm" action="#">
+      <div class="form-body">
+        <div class="row p-t-1">
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">Transporte</label>
+              <input type="text" id="transporte" formControlName="transporte"
+                [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('transporte').valid}"
+                placeholder="Digite transporte" (change)="changeDatosGenerales()">
+              <small *ngIf="datosGeneralesForm.controls['transporte'].errors?.required" class="text-warning">
+                Transporte es requerido
+              </small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">Descuento</label>
+              <input type="text" id="descuento" formControlName="descuento"
+                [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('descuento').valid}"
+                placeholder="Digite descuento" (change)="changeDatosGenerales()">
+              <small *ngIf="datosGeneralesForm.controls['descuento'].errors?.required" class="text-warning">
+                Descuento es requerido
+              </small>
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div class="form-group">
+              <label class="control-label">Abono</label>
+              <input type="text" id="abono" formControlName="abono"
+                [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('abono').valid}"
+                placeholder="Digite abono" (disabled)="itemsFactura==[]">
+              <small *ngIf="datosGeneralesForm.controls['abono'].errors?.required" class="text-warning">
+                abono es requerido
+              </small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <h4><b># Articulos= {{totales.cantidad_items}} Sub Total= {{totales.sub_total}} Vr
+        Transporte= {{totales.transporte}} Vr Descuento = {{totales.vr_descuento}} Vr
+        antes de iva= {{totales.vr_antes_iva}} Vr de iva= {{totales.vr_iva}} Total F=
+        {{totales.total}} </b></h4>
     <!-- <div class="text-center">
       <button (click)="cambiarDesde('A')" class="btn btn-success">
 
@@ -351,4 +419,3 @@
 
   </div>
 </div>
-

@@ -2,7 +2,7 @@ import { FinDetFacturaService } from './../../services/fin-det-factura/fin-det-f
 import { InvInvSucService } from './../../services/inv-inv-suc/inv-inv-suc.service';
 import { GenPersonaService } from './../../services/gen-persona/gen-persona.service';
 import { GenPersona } from './../../models/genPersona.model';
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormArray } from '@angular/forms';
 import { CliCliente } from './../../models/cli-cliente';
 import { CliClienteService } from './../../services/cli-cliente/cli-cliente.service';
@@ -12,7 +12,11 @@ import Swal from 'sweetalert2';
   templateUrl: './facturar.component.html',
   styleUrls: ['./facturar.component.css']
 })
+
 export class FacturarComponent implements OnInit {
+  @ViewChild('card_inventario') card_inventario: ElementRef;
+  @ViewChild('table_items') table_items: ElementRef;
+  editar: boolean = false;
   clientes: CliCliente[] = [];
   clienteSeleccionado: CliCliente;
   keyword = 'identificacion';
@@ -27,6 +31,9 @@ export class FacturarComponent implements OnInit {
 
   datosGeneralesForm: FormGroup;
 
+  instalado = false;
+  esCambio = false;
+  banBtnCambio = false;
 
   constructor(
     public _cliClienteService: CliClienteService,
@@ -34,7 +41,6 @@ export class FacturarComponent implements OnInit {
     public _invInvSucService: InvInvSucService,
     public _finDetalleFactura: FinDetFacturaService
   ) { }
-
   ngOnInit() {
     this.initForm();
   }
@@ -53,6 +59,7 @@ export class FacturarComponent implements OnInit {
       descripcion: new FormControl(null, Validators.required),
       codigo: new FormControl(null, Validators.required),
       cantidad_item: new FormControl(1, [Validators.required]),
+      instalado: new FormControl(false),
       /* cantidad_item: new FormControl(1,{
         validators:[Validators.required],[this.getPattern]
       }), */
@@ -60,8 +67,26 @@ export class FacturarComponent implements OnInit {
     });
     this.datosGeneralesForm = new FormGroup({
       transporte: new FormControl(0, [Validators.pattern('^[0-9]+$'), Validators.required]),
-      descuento: new FormControl(0, [Validators.pattern('^[0-9]{1,2}(\\.[0-9]{1,2})?$'), Validators.required])
-    })
+      descuento: new FormControl(0, [Validators.pattern('^[0-9]{1,2}(\\.[0-9]{1,2})?$'), Validators.required]),
+      abono: new FormControl(0, [Validators.pattern('^[0-9]+$'), Validators.required])
+    });
+  }
+  selectCambio(item: any) {
+    console.log("entro");
+    this.editar = false;
+    this.banBtnCambio = false;
+    if (!item) {
+      this.itemsFactura.forEach(element => {
+        if (element.cambio === 'S') {
+          element.esCambio = this.esCambio;
+        }
+      });
+    }
+    this.itemsFactura.forEach(element => {
+      if (element.esCambio) {
+        this.banBtnCambio = true;
+      }
+    });
   }
 
   cantidadValida() {
@@ -76,14 +101,35 @@ export class FacturarComponent implements OnInit {
       isValid = true;
     }
     return isValid;
+  }
 
+  maxValidoParametro() {
+    if (this.getParametros.valid) {
+      if (this.invSucursalSeleccionado.maximos_p !== []) {
+        for (let j = 0; j < this.invSucursalSeleccionado.maximos_p.length; j++) {
+          let contador = 0;
+          for (let i = 0; i < this.getParametros.length; i++) {
+            if (this.getParametros.value[i] > this.invSucursalSeleccionado.maximos_p[j]) {
+              contador++;
+            }
+            if (contador > j) {
+              return false;
+            }
+          }
+        }
+      }
+    }
+    return true;
   }
 
   get getParametros(): FormArray {
     return this.invSucursalForm.get('parametros') as FormArray;
   }
-  limpiarFormArray(formArray:FormArray){
+  limpiarFormArray(formArray: FormArray) {
     formArray.clear();
+  }
+  limpiarFormulario(formGroup: FormGroup) {
+    formGroup.reset();
   }
 
   aniadirParametro() {
@@ -94,8 +140,17 @@ export class FacturarComponent implements OnInit {
     this.getParametros.push(parametro);
   }
 
+  clearedEvente(opc) {
+    if (opc === 1) {
+
+    } else if (opc === 2) {
+      this.limpiarFormulario(this.invSucursalForm);
+      this.limpiarFormArray(this.getParametros);
+    }
+  }
 
   selectEvent(item, opc) {
+    console.log("Seleccionado", item);
     if (opc === 1) {
       this.clienteSeleccionado = item;
       this.clienteForm.controls['nombre'].setValue(this.clienteSeleccionado.nombre);
@@ -105,7 +160,9 @@ export class FacturarComponent implements OnInit {
       this.clienteForm.controls['celular'].setValue(this.clienteSeleccionado.celular);
     } else if (opc === 2) {
       this.invSucursalSeleccionado = item;
+      console.log("items", this.invSucursalSeleccionado.Componentes);
       this.invSucursalForm.controls['codigo'].setValue(this.invSucursalSeleccionado.codigo);
+      this.invSucursalSeleccionado.cambio = this.invSucursalSeleccionado.cambio;
       console.log('inventario', this.invSucursalSeleccionado);
 
       for (let index = 0; index < this.invSucursalSeleccionado.n_parametros; index++) {
@@ -127,9 +184,7 @@ export class FacturarComponent implements OnInit {
       this.limpiarFormArray(this.getParametros);
       this.invSucursalForm.controls['codigo'].setValue(null);
       this.buscarInventarioSucursal(val);
-
     }
-
   }
 
   onFocused(e) {
@@ -247,14 +302,19 @@ export class FacturarComponent implements OnInit {
 
   addItemFactura() {
     console.log('addItemFactura was executed');
-    console.log(this.invSucursalForm, this.getParametros);
+    console.log(this.invSucursalForm, this.getParametros, this.invSucursalSeleccionado);
     let item = {
+      Componentes: this.invSucursalSeleccionado.Componentes,
+      cambio: this.invSucursalSeleccionado.cambio,
+      esCambio: false,
+      id_grupo: this.invSucursalSeleccionado.id_grupo,
       id_inv_suc: this.invSucursalSeleccionado.id_inv_suc,
       id_inventario: this.invSucursalSeleccionado.id_inventario,
       id_sucursal: this.invSucursalSeleccionado.id_sucursal,
       id_formula: this.invSucursalSeleccionado.id_formula,
       n_parametros: this.invSucursalSeleccionado.n_parametros,
       nesecita_p: this.invSucursalSeleccionado.nesecita_p,
+      maximos_p: this.invSucursalSeleccionado.maximos_p,
       codigo: this.invSucursalForm.value.codigo,
       descripcion: this.invSucursalSeleccionado.descripcion,
       cantidad_item: this.invSucursalForm.value.cantidad_item,
@@ -262,6 +322,7 @@ export class FacturarComponent implements OnInit {
       unidad: this.invSucursalSeleccionado.unidad,
       vr_venta_domicilio: this.invSucursalSeleccionado.vr_venta_domicilio,
       vr_venta_local: this.invSucursalSeleccionado.vr_venta_local,
+      vr_venta: 0,
       sub_total: 0,
       descuento: 0,
       vr_descuento: 0,
@@ -271,7 +332,13 @@ export class FacturarComponent implements OnInit {
       vr_iva: 0,
       total: 0,
       parametros: []
+    };
+    if (this.invSucursalForm.value.instalado) {
+      item.vr_venta = this.invSucursalSeleccionado.vr_venta_domicilio;
+    } else if (!this.invSucursalForm.value.instalado) {
+      item.vr_venta = this.invSucursalSeleccionado.vr_venta_local;
     }
+    console.log("items", this.itemsFactura);
     this.itemsFactura.push(item);
     for (let index = 0; index < this.getParametros.length; index++) {
       console.log(this.invSucursalForm.get('parametros').value[index]);
@@ -299,5 +366,86 @@ export class FacturarComponent implements OnInit {
       this.calcularPreciosItemsFactura();
     }
   }
+  changeVrVenta() {
+    if (this.instalado) {
+      this.itemsFactura.forEach(element => {
+        element.vr_venta = element.vr_venta_domicilio;
+      });
+    } else if (!this.instalado) {
+      this.itemsFactura.forEach(element => {
+        element.vr_venta = element.vr_venta_local;
+      });
+    }
+    this.calcularPreciosItemsFactura();
+  }
+
+  deletedItem(item) {
+    let i = this.itemsFactura.indexOf(item);
+    this.itemsFactura.splice(i, 1);
+    this.calcularPreciosItemsFactura();
+  }
+  editItem(item) {
+    this.limpiarFormArray(this.getParametros);
+    this.selectEvent(item, 2);
+    this.invSucursalForm.controls['descripcion'].setValue(item.descripcion);
+    this.invSucursalForm.controls['cantidad_item'].setValue(item.cantidad_item);
+    this.getParametros.setValue(item.parametros);
+
+    this.card_inventario.nativeElement.focus();
+    this.card_inventario.nativeElement.scrollIntoView({ block: "center" });
+    this.esCambio = false;
+    this.selectCambio(null);
+    this.editar = true;
+  }
+  aplitChangueItem() {
+    console.log('formulario', this.invSucursalForm);
+    let i = this.itemsFactura.indexOf(this.invSucursalSeleccionado);
+    this.itemsFactura[i].cantidad_item = this.invSucursalForm.value.cantidad_item;
+    this.itemsFactura[i].parametros = [];
+    for (let index = 0; index < this.getParametros.length; index++) {
+      this.itemsFactura[i].parametros.push(this.getParametros.value[index]);
+    }
+    console.log('posicion', i);
+    this.calcularPreciosItemsFactura();
+
+    this.table_items.nativeElement.scrollIntoView(true);
+    this.limpiarFormulario(this.invSucursalForm);
+    this.limpiarFormArray(this.getParametros);
+    this.editar = false;
+  }
+  cambiarItems() {
+    this.itemsFactura.forEach(element => {
+      if (element.id_grupo === this.invSucursalSeleccionado.id_grupo && element.esCambio) {
+        console.log("entor1siiii");
+        element.Componentes = this.invSucursalSeleccionado.Componentes;
+        element.cambio = this.invSucursalSeleccionado.cambio;
+        element.esCambio = false;
+        element.id_grupo = this.invSucursalSeleccionado.id_grupo;
+        element.id_inv_suc = this.invSucursalSeleccionado.id_inv_suc;
+        element.id_inventario = this.invSucursalSeleccionado.id_inventario;
+        element.id_sucursal = this.invSucursalSeleccionado.id_sucursal;
+        element.id_formula = this.invSucursalSeleccionado.id_formula;
+        element.n_parametros = this.invSucursalSeleccionado.n_parametros;
+        element.nesecita_p = this.invSucursalSeleccionado.nesecita_p;
+        element.maximos_p = this.invSucursalSeleccionado.maximos_p;
+        element.codigo = this.invSucursalForm.value.codigo;
+        element.descripcion = this.invSucursalSeleccionado.descripcion;
+        element.unidad = this.invSucursalSeleccionado.unidad;
+        element.vr_venta_domicilio = this.invSucursalSeleccionado.vr_venta_domicilio;
+        element.vr_venta_local = this.invSucursalSeleccionado.vr_venta_local;
+        if (this.invSucursalForm.value.instalado) {
+          element.vr_venta = this.invSucursalSeleccionado.vr_venta_domicilio;
+        } else if (!this.invSucursalForm.value.instalado) {
+          element.vr_venta = this.invSucursalSeleccionado.vr_venta_local;
+        }
+        console.log(element);
+      }
+    });
+    this.esCambio=false;
+    this.selectCambio(null);
+    this.calcularPreciosItemsFactura();
+  }
 }
+
+
 
