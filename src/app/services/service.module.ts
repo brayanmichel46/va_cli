@@ -11,7 +11,8 @@ import {
   SubirArchivoService,
   CliClienteService,
   InvInvSucService,
-  FinDetFacturaService
+  FinDetFacturaService,
+  FinFacturaService
 } from './service.index';
 import { ModalUploadImagenService } from '../components/modal-upload-imagen/modal-upload-imagen.service';
 @NgModule({
@@ -30,7 +31,8 @@ import { ModalUploadImagenService } from '../components/modal-upload-imagen/moda
     ModalUploadImagenService,
     CliClienteService,
     InvInvSucService,
-    FinDetFacturaService
+    FinDetFacturaService,
+    FinFacturaService
   ],
   declarations: []
 })

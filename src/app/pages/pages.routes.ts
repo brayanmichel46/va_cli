@@ -33,7 +33,7 @@ const pagesRoutes: Routes = [
            /**
             /* @description: Rutas de ventas
             */
-           { path: 'facturar', component: FacturarComponent, data: { titulo: 'Facturar' } },
+           { path: 'facturar/:id', component: FacturarComponent, data: { titulo: 'Facturar' } },
             { path: '', redirectTo: '/dashboard', pathMatch: 'full' }
         ]
     }

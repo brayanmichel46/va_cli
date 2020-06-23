@@ -1,98 +1,108 @@
 <div class="card">
   <div class="card-header bg-info">
-    <h4 class="m-b-0 text-white">Factura</h4>
+    <h4 class="m-b-0 text-white" style="display: inline;">Factura <span *ngIf="facturaSeleccionada">No
+        {{facturaSeleccionada.num_factura}}</span></h4>
+    <div class="card-actions">
+      <button class="btn btn-xs btn-success" (click)="esConsulta=false" *ngIf="esConsulta">
+        <li class="fa fa-edit"></li>
+      </button>
+      <button class="btn btn-xs btn-danger" (click)="redirectTo()" *ngIf="facturaSeleccionada && !esConsulta">
+        <li class="fa fa-times"></li>
+      </button>
+    </div>
   </div>
   <div class="card-body">
     <form ngNativeValidate [formGroup]="clienteForm" (ngSubmit)="createClient()" action="#">
-      <div class="form-body">
-        <h3 class="card-title">Datos generales</h3>
-        <hr>
-        <div class="row p-t-1">
-          <div class="col-md-4">
-            <div class="form-group">
-              <label class="control-label">Cedula cliente</label>
+      <fieldset [disabled]="esConsulta">
+        <div class="form-body">
+          <h3 class="card-title">Datos generales</h3>
+          <hr>
+          <div class="row p-t-1">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="control-label">Cedula cliente</label>
 
-              <ng-autocomplete formControlName="identificacion" [data]="clientes" [searchKeyword]="keyword"
-                (selected)='selectEvent($event,1)' (inputChanged)='onChangeSearch($event,1)'
-                (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplate" [notFoundTemplate]="notFoundTemplate"
-                (ngModel)="clienteSeleccionado">
-              </ng-autocomplete>
+                <ng-autocomplete formControlName="identificacion" [data]="clientes" [searchKeyword]="keyword"
+                  (selected)='selectEvent($event,1)' (inputChanged)='onChangeSearch($event,1)'
+                  (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplate"
+                  [notFoundTemplate]="notFoundTemplate">
+                </ng-autocomplete>
 
-              <ng-template #itemTemplate let-item>
-                <a [innerHTML]="'<b>'+item.identificacion+' </b>'+item.nombre"></a>
-              </ng-template>
+                <ng-template #itemTemplate let-item>
+                  <a [innerHTML]="'<b>'+item.identificacion+' </b>'+item.nombre"></a>
+                </ng-template>
 
-              <ng-template #notFoundTemplate let-notFound>
-                <div [innerHTML]="notFound"></div>
-              </ng-template>
-              <small *ngIf="clienteForm.controls['identificacion'].errors?.required" class="text-warning">
-                Identificacion es requerida
-              </small>
+                <ng-template #notFoundTemplate let-notFound>
+                  <div [innerHTML]="notFound"></div>
+                </ng-template>
+                <small *ngIf="clienteForm.controls['identificacion'].errors?.required" class="text-warning">
+                  Identificacion es requerida
+                </small>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="control-label">Nombre</label>
+                <input type="text" id="nombre" formControlName="nombre"
+                  [ngClass]="{'form-control': true,'warning-input': !clienteForm.get('nombre').valid}"
+                  placeholder="Digite nombre">
+                <small *ngIf="clienteForm.controls['nombre'].errors?.required" class="text-warning">
+                  Nombre es requerido
+                </small>
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="control-label">email</label>
+                <input type="text" id="email" formControlName="email"
+                  [ngClass]="{'form-control': true,'error-input': !clienteForm.get('email').valid}"
+                  placeholder="Digite email">
+                <small *ngIf="clienteForm.controls['email'].invalid" class="text-danger">
+                  Error en email
+                </small>
+                <!-- <small class="form-control-feedback">{{ getError('email')}}</small> -->
+              </div>
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              <label class="control-label">Nombre</label>
-              <input type="text" id="nombre" formControlName="nombre"
-                [ngClass]="{'form-control': true,'warning-input': !clienteForm.get('nombre').valid}"
-                placeholder="Digite nombre">
-              <small *ngIf="clienteForm.controls['nombre'].errors?.required" class="text-warning">
-                Nombre es requerido
-              </small>
+          <div class="row p-t-1">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="control-label">direccion</label>
+                <input type="text" id="direccion" formControlName="direccion"
+                  [ngClass]="{'form-control': true,'error-input': !clienteForm.get('direccion').valid}"
+                  placeholder="Digite direccion">
+                <small *ngIf="clienteForm.controls['direccion'].invalid" class="text-danger">
+                  Error en la direccion
+                </small>
+                <!-- <small class="form-control-feedback">{{ getError('direccion')}}</small> -->
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="control-label">celular</label>
+                <input type="text" id="celular" formControlName="celular"
+                  [ngClass]="{'form-control': true,'error-input': !clienteForm.get('celular').valid}"
+                  placeholder="Digite celular">
+                <small *ngIf="clienteForm.controls['celular'].invalid" class="text-danger">
+                  Error en celular
+                </small>
+                <!-- <small class="form-control-feedback">{{ getError('celular')}}</small> -->
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="control-label">telefono</label>
+                <input type="text" id="telefono" formControlName="telefono"
+                  [ngClass]="{'form-control': true,'error-input': !clienteForm.get('telefono').valid}"
+                  placeholder="Digite telefono">
+                <small *ngIf="clienteForm.controls['telefono'].invalid" class="text-danger">
+                  Error en telefono
+                </small>
+                <!-- <small class="form-control-feedback">{{ getError('telefono')}}</small> -->
+              </div>
             </div>
           </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              <label class="control-label">email</label>
-              <input type="text" id="email" formControlName="email"
-                [ngClass]="{'form-control': true,'error-input': !clienteForm.get('email').valid}"
-                placeholder="Digite email">
-              <small *ngIf="clienteForm.controls['email'].invalid" class="text-danger">
-                Error en email
-              </small>
-              <!-- <small class="form-control-feedback">{{ getError('email')}}</small> -->
-            </div>
-          </div>
-        </div>
-        <div class="row p-t-1">
-          <div class="col-md-4">
-            <div class="form-group">
-              <label class="control-label">direccion</label>
-              <input type="text" id="direccion" formControlName="direccion"
-                [ngClass]="{'form-control': true,'error-input': !clienteForm.get('direccion').valid}"
-                placeholder="Digite direccion">
-              <small *ngIf="clienteForm.controls['direccion'].invalid" class="text-danger">
-                Error en la direccion
-              </small>
-              <!-- <small class="form-control-feedback">{{ getError('direccion')}}</small> -->
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              <label class="control-label">celular</label>
-              <input type="text" id="celular" formControlName="celular"
-                [ngClass]="{'form-control': true,'error-input': !clienteForm.get('celular').valid}"
-                placeholder="Digite celular">
-              <small *ngIf="clienteForm.controls['celular'].invalid" class="text-danger">
-                Error en celular
-              </small>
-              <!-- <small class="form-control-feedback">{{ getError('celular')}}</small> -->
-            </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              <label class="control-label">telefono</label>
-              <input type="text" id="telefono" formControlName="telefono"
-                [ngClass]="{'form-control': true,'error-input': !clienteForm.get('telefono').valid}"
-                placeholder="Digite telefono">
-              <small *ngIf="clienteForm.controls['telefono'].invalid" class="text-danger">
-                Error en telefono
-              </small>
-              <!-- <small class="form-control-feedback">{{ getError('telefono')}}</small> -->
-            </div>
-          </div>
-        </div>
-        <!--/row-
+          <!--/row-
           <div class="row">
               <div class="col-md-6">
                   <div class="form-group has-success">
@@ -192,14 +202,17 @@
               </div>
               <!--/span
           </div>-->
-      </div>
-      <div class="form-actions">
-        <button type="submit" class="btn btn-rounded btn-success" *ngIf="!clienteSeleccionado"
-          [disabled]="clienteForm.invalid"> <i class="fa fa-check"></i> Crear cliente</button>
-        <button type="button" class="btn btn-rounded btn-info" *ngIf="clienteSeleccionado" (click)="updateClient()"
-          [disabled]="clienteForm.invalid"><i class="fa fa-pencil"></i> Actualizar cliente</button>
-      </div>
+        </div>
+
+        <div class="form-actions" *ngIf="!esConsulta">
+          <button type="submit" class="btn btn-rounded btn-success" *ngIf="!clienteSeleccionado"
+            [disabled]="clienteForm.invalid"> <i class="fa fa-check"></i> Crear cliente</button>
+          <button type="button" class="btn btn-rounded btn-info" *ngIf="clienteSeleccionado" (click)="updateClient()"
+            [disabled]="clienteForm.invalid"><i class="fa fa-pencil"></i> Actualizar cliente</button>
+        </div>
+      </fieldset>
     </form>
+
     <!--   <form ngNativeValidate [formGroup]="datosGeneralesForm" action="#">
       <div class="form-body">
         <div class="row p-t-1">
@@ -231,10 +244,7 @@
   </div>
 </div>
 
-<div class="card">
-  <!--  <div class="card-header bg-info">
-    <h4 class="m-b-0 text-white">Nuevo Item</h4>
-  </div> -->
+<div class="card" *ngIf="!esConsulta">
   <div class="card-body" #card_inventario>
     <form ngNativeValidate [formGroup]="invSucursalForm" (ngSubmit)="addItemFactura()" action="#">
 
@@ -245,9 +255,9 @@
               <label class="control-label">Nuevo item</label>
 
               <ng-autocomplete formControlName="descripcion" [data]="invSucursal" [searchKeyword]="keywordInvSucursal"
-                (selected)='selectEvent($event,2)' (inputChanged)='onChangeSearch($event,2)' (inputCleared)="clearedEvente(2)"
-                (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplateinv" [disabled]="editar"
-                [notFoundTemplate]="notFoundTemplateinv">
+                (selected)='selectEvent($event,2)' (inputChanged)='onChangeSearch($event,2)'
+                (inputCleared)="clearedEvente(2)" (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplateinv"
+                [disabled]="editar" [notFoundTemplate]="notFoundTemplateinv">
               </ng-autocomplete>
 
               <ng-template #itemTemplateinv let-item>
@@ -272,7 +282,7 @@
           <div class="col-md-6">
             <div class="form-group" *ngIf="!banBtnCambio">
               <label class="control-label">Cantidad Item</label>
-              <input type="number"  formControlName="cantidad_item" step="0.01"
+              <input type="number" formControlName="cantidad_item" step="0.01"
                 [ngClass]="{'form-control': true,'warning-input': (!invSucursalForm.get('cantidad_item').valid || !cantidadValida())}"
                 placeholder="Digite cantidad">
             </div>
@@ -300,19 +310,19 @@
       <div class="form-actions text-center" *ngIf="!editar && !banBtnCambio">
         <!-- [disabled]="invSucursalForm.invalid" -->
         <button type="submit" class="btn btn-rounded btn-success"
-          [disabled]="invSucursalForm.invalid || !maxValidoParametro()" > <i class="fa fa-check"></i> Añadir</button>
-          <br>
+          [disabled]="invSucursalForm.invalid || !maxValidoParametro()"> <i class="fa fa-check"></i> Añadir</button>
+        <br>
 
       </div>
 
     </form>
     <div class="text-center" *ngIf="editar && !banBtnCambio">
       <button (click)="aplitChangueItem('texto')" class="btn btn-rounded btn-success"
-      [disabled]="invSucursalForm.invalid || !maxValidoParametro()"> <i class="fa fa-check"></i> Editar</button>
+        [disabled]="invSucursalForm.invalid || !maxValidoParametro()"> <i class="fa fa-check"></i> Editar</button>
     </div>
     <div class="text-center" *ngIf="banBtnCambio">
-      <button (click)="cambiarItems()" class="btn btn-rounded btn-success"
-      [disabled]="!this.invSucursalSeleccionado"> <i class="fa fa-check"></i> Cambio</button>
+      <button (click)="cambiarItems()" class="btn btn-rounded btn-success" [disabled]="!this.invSucursalSeleccionado">
+        <i class="fa fa-check"></i> Cambio</button>
     </div>
   </div>
 </div>
@@ -323,18 +333,19 @@
 
     <!--  <h3>Clientes registrados ( <small>{{totalRegistros}}</small> )</h3> -->
     <input [(ngModel)]="instalado" id="checkbox-signup" type="checkbox" class="filled-in chk-col-light-blue"
-      (change)="changeVrVenta()">
-    <label for="checkbox-signup"> Instalado </label>
-    <h4><b># Articulos=</b><b>[{{totales.cantidad_items }}]</b> <b>Total=[</b><b
+      (change)="changeVrVenta()" *ngIf="!esConsulta">
+    <label for="checkbox-signup" *ngIf="!esConsulta"> Instalado </label>
+    <h4><b># Articulos=</b><b>[{{itemsFactura.length }}]</b> <b>Total=[</b><b
         class="text-error">{{totales.total | currency:'$'}}</b>]
     </h4>
-    <div class="table-responsive m-t-20" >
+    <div class="table-responsive m-t-20">
       <table class="table table-striped">
         <thead>
-          <th></th>
+          <th *ngIf="!esConsulta"></th>
           <th>Cant</th>
-          <th><input [(ngModel)]="esCambio" id="checkbox-cambio" type="checkbox" (change)="selectCambio(null)" >
-            <label for="checkbox-cambio"  style="display: inline;"></label>descripcion</th>
+          <th><input [(ngModel)]="esCambio" id="checkbox-cambio" type="checkbox" (change)="selectCambio(null)"
+              *ngIf="!esConsulta">
+            <label for="checkbox-cambio" style="display: inline;"></label>descripcion</th>
           <th>Vr Unitario</th>
           <th>Subtotal</th>
           <th>Total</th>
@@ -342,7 +353,7 @@
         <tbody>
 
           <tr *ngFor="let item of itemsFactura;let i=index;">
-            <td class="text-center">
+            <td class="text-center" *ngIf="!esConsulta">
 
               <button class="btn btn-xs btn-info" (click)="editItem(item)" *ngIf="!banBtnCambio">
                 <li class="fa fa-edit"></li>
@@ -353,7 +364,8 @@
             </td>
             <td>{{item.cantidad_item}}</td>
             <td>
-              <input [(ngModel)]="item.esCambio" id="checkbox-item-{{i}}" type="checkbox" *ngIf="item.cambio=='S'" (change)="selectCambio(item)" >
+              <input [(ngModel)]="item.esCambio" id="checkbox-item-{{i}}" type="checkbox"
+                *ngIf="item.cambio=='S' && !esConsulta" (change)="selectCambio(item)">
               <label for="checkbox-item-{{i}}" style="display: inline;"></label>
               [<span *ngFor="let p of item.parametros;let i = index"><b> {{p}} </b><b
                   *ngIf="i<item.parametros.length-1"> X </b></span> ] {{item.codigo}} {{item.descripcion}}</td>
@@ -391,7 +403,7 @@
           </div>
           <div class="col-md-4">
             <div class="form-group">
-              <label class="control-label">Abono</label>
+              <label class="control-label">Pago</label>
               <input type="text" id="abono" formControlName="abono"
                 [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('abono').valid}"
                 placeholder="Digite abono" (disabled)="itemsFactura==[]">
@@ -406,7 +418,14 @@
     <h4><b># Articulos= {{totales.cantidad_items}} Sub Total= {{totales.sub_total}} Vr
         Transporte= {{totales.transporte}} Vr Descuento = {{totales.vr_descuento}} Vr
         antes de iva= {{totales.vr_antes_iva}} Vr de iva= {{totales.vr_iva}} Total F=
-        {{totales.total}} </b></h4>
+        {{totales.total}} Saldo: <span *ngIf="totales.total>=datosGeneralesForm.value.abono">
+          {{totales.total-datosGeneralesForm.value.abono | currency}} </span>
+        <span *ngIf="totales.total<datosGeneralesForm.value.abono"> 0 </span>
+        Regreso:
+        <span *ngIf="datosGeneralesForm.value.abono>totales.total">
+          {{datosGeneralesForm.value.abono-totales.total | currency}} </span>
+        <span *ngIf="datosGeneralesForm.value.abono<totales.total"> 0 </span>
+      </b></h4>
     <!-- <div class="text-center">
       <button (click)="cambiarDesde('A')" class="btn btn-success">
 
@@ -416,6 +435,9 @@
         <li class="fa fa-fast-forward"></li>
       </button>
     </div> -->
-
+    <div class="text-center" *ngIf="!esConsulta">
+      <button (click)="guardarFactura()" class="btn btn-rounded btn-success" [disabled]="!validarFormularios()">
+        <i class="fa fa-check"></i>Facturar</button>
+    </div>
   </div>
 </div>

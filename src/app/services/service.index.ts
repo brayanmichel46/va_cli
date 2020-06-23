@@ -1,3 +1,4 @@
+export { FinFacturaService } from './fin-factura/fin-factura.service';
 export { FinDetFacturaService } from './fin-det-factura/fin-det-factura.service';
 export { InvInvSucService } from './inv-inv-suc/inv-inv-suc.service';
 export { CliClienteService } from './cli-cliente/cli-cliente.service';

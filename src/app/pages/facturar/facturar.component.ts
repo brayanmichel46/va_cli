@@ -1,9 +1,11 @@
+import { FinFacturaService } from './../../services/fin-factura/fin-factura.service';
 import { FinDetFacturaService } from './../../services/fin-det-factura/fin-det-factura.service';
 import { InvInvSucService } from './../../services/inv-inv-suc/inv-inv-suc.service';
 import { GenPersonaService } from './../../services/gen-persona/gen-persona.service';
 import { GenPersona } from './../../models/genPersona.model';
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormArray } from '@angular/forms';
+import { ActivatedRoute, Params, Router } from '@angular/router';
 import { CliCliente } from './../../models/cli-cliente';
 import { CliClienteService } from './../../services/cli-cliente/cli-cliente.service';
 import Swal from 'sweetalert2';
@@ -16,7 +18,7 @@ import Swal from 'sweetalert2';
 export class FacturarComponent implements OnInit {
   @ViewChild('card_inventario') card_inventario: ElementRef;
   @ViewChild('table_items') table_items: ElementRef;
-  editar: boolean = false;
+
   clientes: CliCliente[] = [];
   clienteSeleccionado: CliCliente;
   keyword = 'identificacion';
@@ -28,21 +30,42 @@ export class FacturarComponent implements OnInit {
   invSucursalForm: FormGroup;
   itemsFactura: any[] = [];
   totales: any = {};
+  facturaSeleccionada: any = null;
 
   datosGeneralesForm: FormGroup;
-
+  // banderas
   instalado = false;
   esCambio = false;
   banBtnCambio = false;
+  editar: boolean = false;
+  esConsulta: boolean = false;
+  esEdicion: boolean = false;
 
   constructor(
     public _cliClienteService: CliClienteService,
     public _genPersonaService: GenPersonaService,
     public _invInvSucService: InvInvSucService,
-    public _finDetalleFactura: FinDetFacturaService
+    public _finDetalleFactura: FinDetFacturaService,
+    public _finFacturaService: FinFacturaService,
+    private rutaActiva: ActivatedRoute,
+    private router: Router
   ) { }
   ngOnInit() {
+    console.log('entra')
     this.initForm();
+    let parametros = this.rutaActiva.snapshot.params;
+    if (parseInt(parametros.id, 10) !== -1) {
+      this.obtenerFactura(parseInt(parametros.id, 10));
+      this.esConsulta = true;
+      console.log("daafslkdjf", this.facturaSeleccionada);
+    }
+    this.rutaActiva.params.subscribe((params) => {
+      console.log('updatedParams', params);
+      if (params != parametros) {
+        this.redirectTo(this.router.url);
+      }
+      //this.redirectTo(this.router.url);
+    });
   }
   initForm() {
     this.clienteForm = new FormGroup({
@@ -54,15 +77,11 @@ export class FacturarComponent implements OnInit {
       celular: new FormControl(null, Validators.pattern('^[0-9]+'))
     });
 
-
     this.invSucursalForm = new FormGroup({
       descripcion: new FormControl(null, Validators.required),
       codigo: new FormControl(null, Validators.required),
       cantidad_item: new FormControl(1, [Validators.required]),
       instalado: new FormControl(false),
-      /* cantidad_item: new FormControl(1,{
-        validators:[Validators.required],[this.getPattern]
-      }), */
       parametros: new FormArray([])
     });
     this.datosGeneralesForm = new FormGroup({
@@ -153,6 +172,7 @@ export class FacturarComponent implements OnInit {
     console.log("Seleccionado", item);
     if (opc === 1) {
       this.clienteSeleccionado = item;
+      this.clienteForm.controls['identificacion'].setValue(this.clienteSeleccionado.identificacion);
       this.clienteForm.controls['nombre'].setValue(this.clienteSeleccionado.nombre);
       this.clienteForm.controls['email'].setValue(this.clienteSeleccionado.email);
       this.clienteForm.controls['direccion'].setValue(this.clienteSeleccionado.direccion);
@@ -441,10 +461,75 @@ export class FacturarComponent implements OnInit {
         console.log(element);
       }
     });
-    this.esCambio=false;
+    this.esCambio = false;
     this.selectCambio(null);
     this.calcularPreciosItemsFactura();
   }
+  validarFormularios() {
+    let esValido = true;
+    if (this.clienteForm.invalid) {
+      esValido = false;
+    }
+    if (this.datosGeneralesForm.invalid) {
+      esValido = false;
+    }
+    if (this.itemsFactura.length === 0) {
+      esValido = false;
+    }
+    return esValido
+  }
+  guardarFactura() {
+    if (!this.validarFormularios()) {
+      console.log("no es valido");
+      return;
+    }
+    console.log("esValido");
+    let datosGenerales = {
+      transporte: this.datosGeneralesForm.value.transporte,
+      descuento: this.datosGeneralesForm.value.descuento,
+      abono: this.datosGeneralesForm.value.abono
+    };
+    this._finFacturaService.guardarFactura(this.clienteSeleccionado.id_cliente, this.itemsFactura, this.totales, datosGenerales)
+      .subscribe((res: any) => {
+        console.log('save recib', res);
+        //this.router.navigate(['facturar/' + res.result]);
+        this.redirectTo('facturar/' + res.result);
+        //this.ngOnInit();
+      });
+  }
+  obtenerFactura(id_factura) {
+
+    this._finFacturaService.obtenerFactura(id_factura)
+      .subscribe((res: any) => {
+        console.log('consult factura for id', res);
+        this.facturaSeleccionada = res.result;
+        this.clienteSeleccionado = new CliCliente(
+          this.facturaSeleccionada.CliCliente.direccion,
+          this.facturaSeleccionada.CliCliente.email,
+          this.facturaSeleccionada.CliCliente.celular,
+          this.facturaSeleccionada.CliCliente.telefono,
+          null,
+          this.facturaSeleccionada.CliCliente.nombre,
+          this.facturaSeleccionada.CliCliente.identificacion,
+          this.facturaSeleccionada.CliCliente.id_cliente,
+          this.facturaSeleccionada.CliCliente.id_persona,
+          true
+        );
+        this.selectEvent(this.clienteSeleccionado, 1);
+        this.itemsFactura = this.facturaSeleccionada.items;
+        this.calcularPreciosItemsFactura();
+      });
+
+  }
+  redirectTo(uri) {
+    if (uri) {
+      this.router.navigateByUrl('/', { skipLocationChange: true }).then(() =>
+        this.router.navigate([uri]));
+      return;
+    }
+    this.redirectTo('facturar/' + parseInt(this.facturaSeleccionada.id_factura, 10));
+  }
+
 }
 
 
