@@ -1,8 +1,15 @@
 <div class="card">
   <div class="card-header bg-info">
     <h4 class="m-b-0 text-white" style="display: inline;">Factura <span *ngIf="facturaSeleccionada">No
-        {{facturaSeleccionada.num_factura}}</span></h4>
+        {{facturaSeleccionada.num_factura}} Estado: {{facturaSeleccionada.estado}}</span></h4>
     <div class="card-actions">
+      <button class="btn btn-xs btn-success" (click)="mostrarModalPago()"
+        *ngIf="esConsulta && !esCotizacion && facturaSeleccionada.saldo>0">
+        <li class="fa fa-money"></li>
+      </button>
+      <button class="btn btn-xs btn-warning" (click)="generatePdf()" *ngIf="esConsulta">
+        <li class="fa fa-file"></li>
+      </button>
       <button class="btn btn-xs btn-success" (click)="esConsulta=false" *ngIf="esConsulta">
         <li class="fa fa-edit"></li>
       </button>
@@ -16,6 +23,8 @@
       <fieldset [disabled]="esConsulta">
         <div class="form-body">
           <h3 class="card-title">Datos generales</h3>
+          <p *ngIf="facturaSeleccionada">Debe: {{facturaSeleccionada.saldo}}</p>
+          <p *ngIf="facturaSeleccionada">Total: {{facturaSeleccionada.total}}</p>
           <hr>
           <div class="row p-t-1">
             <div class="col-md-4">
@@ -204,10 +213,10 @@
           </div>-->
         </div>
 
-        <div class="form-actions" *ngIf="!esConsulta">
-          <button type="submit" class="btn btn-rounded btn-success" *ngIf="!clienteSeleccionado"
-            [disabled]="clienteForm.invalid"> <i class="fa fa-check"></i> Crear cliente</button>
-          <button type="button" class="btn btn-rounded btn-info" *ngIf="clienteSeleccionado" (click)="updateClient()"
+        <div class="form-actions text-center" *ngIf="!esConsulta">
+          <button type="submit" class="btn btn-success" *ngIf="!clienteSeleccionado" [disabled]="clienteForm.invalid">
+            <i class="fa fa-check"></i> Crear cliente</button>
+          <button type="button" class="btn btn-info" *ngIf="clienteSeleccionado" (click)="updateClient()"
             [disabled]="clienteForm.invalid"><i class="fa fa-pencil"></i> Actualizar cliente</button>
         </div>
       </fieldset>
@@ -309,19 +318,19 @@
       </div>
       <div class="form-actions text-center" *ngIf="!editar && !banBtnCambio">
         <!-- [disabled]="invSucursalForm.invalid" -->
-        <button type="submit" class="btn btn-rounded btn-success"
-          [disabled]="invSucursalForm.invalid || !maxValidoParametro()"> <i class="fa fa-check"></i> Añadir</button>
+        <button type="submit" class="btn btn-success" [disabled]="invSucursalForm.invalid || !maxValidoParametro()"> <i
+            class="fa fa-check"></i> Añadir</button>
         <br>
 
       </div>
 
     </form>
     <div class="text-center" *ngIf="editar && !banBtnCambio">
-      <button (click)="aplitChangueItem('texto')" class="btn btn-rounded btn-success"
+      <button (click)="aplitChangueItem('texto')" class="btn btn-success"
         [disabled]="invSucursalForm.invalid || !maxValidoParametro()"> <i class="fa fa-check"></i> Editar</button>
     </div>
     <div class="text-center" *ngIf="banBtnCambio">
-      <button (click)="cambiarItems()" class="btn btn-rounded btn-success" [disabled]="!this.invSucursalSeleccionado">
+      <button (click)="cambiarItems()" class="btn btn-success" [disabled]="!this.invSucursalSeleccionado">
         <i class="fa fa-check"></i> Cambio</button>
     </div>
   </div>
@@ -347,7 +356,6 @@
               *ngIf="!esConsulta">
             <label for="checkbox-cambio" style="display: inline;"></label>descripcion</th>
           <th>Vr Unitario</th>
-          <th>Subtotal</th>
           <th>Total</th>
         </thead>
         <tbody>
@@ -369,51 +377,53 @@
               <label for="checkbox-item-{{i}}" style="display: inline;"></label>
               [<span *ngFor="let p of item.parametros;let i = index"><b> {{p}} </b><b
                   *ngIf="i<item.parametros.length-1"> X </b></span> ] {{item.codigo}} {{item.descripcion}}</td>
-            <td>{{item.sub_total/item.cantidad_item | currency: '$ '}}</td>
-            <td>{{item.sub_total | currency: '$ '}}</td>
+            <td>{{item.total/item.cantidad_item | currency: '$ '}}</td>
             <td>{{item.total | currency: '$ '}}</td>
           </tr>
         </tbody>
       </table>
     </div>
     <form ngNativeValidate [formGroup]="datosGeneralesForm" action="#">
-      <div class="form-body">
-        <div class="row p-t-1">
-          <div class="col-md-4">
-            <div class="form-group">
-              <label class="control-label">Transporte</label>
-              <input type="text" id="transporte" formControlName="transporte"
-                [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('transporte').valid}"
-                placeholder="Digite transporte" (change)="changeDatosGenerales()">
-              <small *ngIf="datosGeneralesForm.controls['transporte'].errors?.required" class="text-warning">
-                Transporte es requerido
-              </small>
+      <fieldset [disabled]="esConsulta">
+        <div class="form-body">
+          <div class="row p-t-1">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="control-label">Transporte</label>
+                <input type="text" id="transporte" formControlName="transporte"
+                  [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('transporte').valid}"
+                  placeholder="Digite transporte" (change)="changeDatosGenerales()">
+                <small *ngIf="datosGeneralesForm.controls['transporte'].errors?.required" class="text-warning">
+                  Transporte es requerido
+                </small>
+              </div>
             </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              <label class="control-label">Descuento</label>
-              <input type="text" id="descuento" formControlName="descuento"
-                [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('descuento').valid}"
-                placeholder="Digite descuento" (change)="changeDatosGenerales()">
-              <small *ngIf="datosGeneralesForm.controls['descuento'].errors?.required" class="text-warning">
-                Descuento es requerido
-              </small>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="control-label">Descuento</label>
+                <input type="text" id="descuento" formControlName="descuento"
+                  [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('descuento').valid}"
+                  placeholder="Digite descuento" (change)="changeDatosGenerales()">
+                <small *ngIf="datosGeneralesForm.controls['descuento'].errors?.required" class="text-warning">
+                  Descuento es requerido
+                </small>
+              </div>
             </div>
-          </div>
-          <div class="col-md-4">
-            <div class="form-group">
-              <label class="control-label">Pago</label>
-              <input type="text" id="abono" formControlName="abono"
-                [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('abono').valid}"
-                placeholder="Digite abono" (disabled)="itemsFactura==[]">
-              <small *ngIf="datosGeneralesForm.controls['abono'].errors?.required" class="text-warning">
-                abono es requerido
-              </small>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label class="control-label">Pago</label>
+                <input type="text" id="abono" formControlName="abono"
+                  [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('abono').valid}"
+                  placeholder="Digite abono"
+                  [readOnly]="itemsFactura.length==0 || (facturaSeleccionada && !esCotizacion)">
+                <small *ngIf="datosGeneralesForm.controls['abono'].errors?.required" class="text-warning">
+                  abono es requerido
+                </small>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </fieldset>
     </form>
     <h4><b># Articulos= {{totales.cantidad_items}} Sub Total= {{totales.sub_total}} Vr
         Transporte= {{totales.transporte}} Vr Descuento = {{totales.vr_descuento}} Vr
@@ -436,8 +446,84 @@
       </button>
     </div> -->
     <div class="text-center" *ngIf="!esConsulta">
-      <button (click)="guardarFactura()" class="btn btn-rounded btn-success" [disabled]="!validarFormularios()">
+      <button (click)="guardarFactura(false)" class="btn btn-success" [disabled]="!validarFormularios(false)">
         <i class="fa fa-check"></i>Facturar</button>
+      <button (click)="guardarFactura(true)" class="btn btn-info" [disabled]="!validarFormularios(true)">
+        <i class="fa fa-check"></i>Cotizar</button>
+    </div>
+  </div>
+</div>
+
+<div class="fondo_negro animated fadeIn" [ngClass]="oculto">
+  <div class="modal" style="display: block" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content" *ngIf="oculto==''">
+        <div class="modal-header">
+          <h5 class="modal-title">Realizar Pago</h5>
+          <button (click)="cerrarModalPago()" type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body text-center" >
+          <form ngNativeValidate [formGroup]="pagoForm" action="#" >
+            <!-- <fieldset [disabled]="esConsulta"> -->
+            <div class="form-body">
+              <div class="row p-t-1">
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label class="control-label">Abono</label>
+                    <input type="text" id="abono" formControlName="abono"
+                      [ngClass]="{'form-control': true,'warning-input': !pagoForm.get('abono').valid}"
+                      placeholder="Digite abono" [readOnly]="(facturaSeleccionada && esCotizacion)">
+                    <small *ngIf="pagoForm.controls['abono'].errors?.required" class="text-warning">
+                      abono es requerido
+                    </small>
+                    <small *ngIf="!pagoForm.get('abono').valid" class="text-warning">
+                      digite un monto valido
+                    </small>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label class="control-label">Pago</label>
+                    <input type="text" id="pago" formControlName="pago"
+                      [ngClass]="{'form-control': true,'warning-input': !pagoForm.get('pago').valid}"
+                      placeholder="Digite pago" [readOnly]="(facturaSeleccionada && esCotizacion)">
+                    <small *ngIf="pagoForm.controls['pago'].errors?.required" class="text-warning">
+                      pago es requerido
+                    </small>
+                    <small *ngIf="!pagoForm.get('abono').valid || (pagoForm.value.pago-pagoForm.value.abono<0)"
+                      class="text-warning">
+                      digite un monto valido
+                    </small>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label class="control-label">Regreso</label>
+                    <h2 *ngIf="pagoForm.value.pago-pagoForm.value.abono>=0">
+                      {{pagoForm.value.pago-pagoForm.value.abono | currency}}</h2>
+                    <h2 *ngIf="pagoForm.value.pago-pagoForm.value.abono<0">Error</h2>
+                  </div>
+                </div>
+                <div class="col-md-12">
+                  <div class="form-group">
+                    <label class="control-label">Saldo</label>
+                    <h2 *ngIf="facturaSeleccionada.saldo-pagoForm.value.abono>=0">
+                      {{facturaSeleccionada.saldo-pagoForm.value.abono | currency}}</h2>
+                    <h2 *ngIf="facturaSeleccionada.saldo-pagoForm.value.abono<0">Error</h2>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- </fieldset> -->
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button [disabled]="pagoForm.invalid" (click)="agregarPagoFacturaId()" type="button" class="btn btn-secondary">Realizar Pago</button>
+          <button (click)="cerrarModalPago()" type="button" class="btn btn-primary">Cerrar</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>

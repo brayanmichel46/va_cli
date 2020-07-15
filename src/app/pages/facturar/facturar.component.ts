@@ -9,6 +9,12 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { CliCliente } from './../../models/cli-cliente';
 import { CliClienteService } from './../../services/cli-cliente/cli-cliente.service';
 import Swal from 'sweetalert2';
+import { PdfMakeWrapper, Txt, Table, Cell, Img } from 'pdfmake-wrapper';
+import pdfMake from 'pdfmake/build/pdfmake';
+import pdfFonts from 'pdfmake/build/vfs_fonts';
+import { min } from 'rxjs-compat/operator/min';
+pdfMake.vfs = pdfFonts.pdfMake.vfs;
+
 @Component({
   selector: 'app-facturar',
   templateUrl: './facturar.component.html',
@@ -33,6 +39,8 @@ export class FacturarComponent implements OnInit {
   facturaSeleccionada: any = null;
 
   datosGeneralesForm: FormGroup;
+
+  pagoForm: FormGroup;
   // banderas
   instalado = false;
   esCambio = false;
@@ -40,6 +48,9 @@ export class FacturarComponent implements OnInit {
   editar: boolean = false;
   esConsulta: boolean = false;
   esEdicion: boolean = false;
+  esCotizacion: boolean = false;
+  realizarPago: boolean = false;
+  oculto: string = 'oculto';
 
   constructor(
     public _cliClienteService: CliClienteService,
@@ -89,6 +100,7 @@ export class FacturarComponent implements OnInit {
       descuento: new FormControl(0, [Validators.pattern('^[0-9]{1,2}(\\.[0-9]{1,2})?$'), Validators.required]),
       abono: new FormControl(0, [Validators.pattern('^[0-9]+$'), Validators.required])
     });
+
   }
   selectCambio(item: any) {
     console.log("entro");
@@ -188,6 +200,8 @@ export class FacturarComponent implements OnInit {
       for (let index = 0; index < this.invSucursalSeleccionado.n_parametros; index++) {
         this.aniadirParametro();
       }
+    } else if (opc === 3) {
+      this.datosGeneralesForm.controls['abono'].setValue(item.abono);
     }
   }
 
@@ -342,6 +356,7 @@ export class FacturarComponent implements OnInit {
       unidad: this.invSucursalSeleccionado.unidad,
       vr_venta_domicilio: this.invSucursalSeleccionado.vr_venta_domicilio,
       vr_venta_local: this.invSucursalSeleccionado.vr_venta_local,
+      costo_promedio: this.invSucursalSeleccionado.costo_promedio,
       vr_venta: 0,
       sub_total: 0,
       descuento: 0,
@@ -453,6 +468,7 @@ export class FacturarComponent implements OnInit {
         element.unidad = this.invSucursalSeleccionado.unidad;
         element.vr_venta_domicilio = this.invSucursalSeleccionado.vr_venta_domicilio;
         element.vr_venta_local = this.invSucursalSeleccionado.vr_venta_local;
+        element.costo_promedio = this.invSucursalSeleccionado.costo_promedio;
         if (this.invSucursalForm.value.instalado) {
           element.vr_venta = this.invSucursalSeleccionado.vr_venta_domicilio;
         } else if (!this.invSucursalForm.value.instalado) {
@@ -465,31 +481,38 @@ export class FacturarComponent implements OnInit {
     this.selectCambio(null);
     this.calcularPreciosItemsFactura();
   }
-  validarFormularios() {
+  validarFormularios(esCotizacion) {
     let esValido = true;
-    if (this.clienteForm.invalid) {
-      esValido = false;
-    }
-    if (this.datosGeneralesForm.invalid) {
-      esValido = false;
-    }
-    if (this.itemsFactura.length === 0) {
-      esValido = false;
-    }
-    return esValido
+    if (this.clienteForm.invalid) { esValido = false; }
+    if (this.datosGeneralesForm.invalid) { esValido = false; }
+    if (this.itemsFactura.length === 0) { esValido = false; }
+    if (this.facturaSeleccionada && this.itemsFactura === this.facturaSeleccionada.items && !this.esCotizacion) { esValido = false; }
+    if (this.datosGeneralesForm.value.abono === 0 && !esCotizacion) { esValido = false; }
+    return esValido;
   }
-  guardarFactura() {
-    if (!this.validarFormularios()) {
+  guardarFactura(esCotizacion) {
+    if (!this.validarFormularios(esCotizacion)) {
       console.log("no es valido");
       return;
     }
     console.log("esValido");
+    let id_factura = null;
+
     let datosGenerales = {
       transporte: this.datosGeneralesForm.value.transporte,
       descuento: this.datosGeneralesForm.value.descuento,
-      abono: this.datosGeneralesForm.value.abono
+      abono: this.datosGeneralesForm.value.abono,
+      id_factura: null,
+      items_factura: null,
+      antEsCotizacion: this.esCotizacion,
+      esCotizacion: esCotizacion
     };
-    this._finFacturaService.guardarFactura(this.clienteSeleccionado.id_cliente, this.itemsFactura, this.totales, datosGenerales)
+    console.log("esCo", esCotizacion, "ant", this.esCotizacion);
+    if (this.facturaSeleccionada) {
+      datosGenerales.id_factura = this.facturaSeleccionada.id_factura;
+      datosGenerales.items_factura = this.facturaSeleccionada.items;
+    }
+    this._finFacturaService.guardarFactura(this.clienteSeleccionado.id_cliente, this.itemsFactura, datosGenerales)
       .subscribe((res: any) => {
         console.log('save recib', res);
         //this.router.navigate(['facturar/' + res.result]);
@@ -500,7 +523,7 @@ export class FacturarComponent implements OnInit {
   obtenerFactura(id_factura) {
 
     this._finFacturaService.obtenerFactura(id_factura)
-      .subscribe((res: any) => {
+      .subscribe(async (res: any) => {
         console.log('consult factura for id', res);
         this.facturaSeleccionada = res.result;
         this.clienteSeleccionado = new CliCliente(
@@ -516,8 +539,14 @@ export class FacturarComponent implements OnInit {
           true
         );
         this.selectEvent(this.clienteSeleccionado, 1);
-        this.itemsFactura = this.facturaSeleccionada.items;
-        this.calcularPreciosItemsFactura();
+        this.itemsFactura = Object.assign(this.itemsFactura, this.facturaSeleccionada.items);
+        this.totales = this.facturaSeleccionada.totales;
+        if (this.facturaSeleccionada.estado === 'COTIZACION') { this.esCotizacion = true; }
+        this.selectEvent({
+          abono: parseFloat((parseFloat(this.facturaSeleccionada.total)
+            - parseFloat(this.facturaSeleccionada.saldo)).toFixed(2))
+        }, 3);
+
       });
 
   }
@@ -530,7 +559,147 @@ export class FacturarComponent implements OnInit {
     this.redirectTo('facturar/' + parseInt(this.facturaSeleccionada.id_factura, 10));
   }
 
+  async generatePdf() {
+    let arrayData = [];
+    let data: any = [];
+    let fecha = new Date(this.facturaSeleccionada.fec_factura);
+    const pdf = new PdfMakeWrapper();
+
+    data.push(['Cantidad', 'Detalle', 'Vr Unitario', 'Vr Total']);
+    for (let index = 0; index < this.itemsFactura.length; index++) {
+      if (index % 30 === 0 && index > 0) {
+        arrayData.push(data);
+        data = [];
+      } else {
+        data.push([this.itemsFactura[index].cantidad_item, this.itemsFactura[index].codigo + ' ' + this.itemsFactura[index].descripcion,
+        new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format((this.itemsFactura[index].total / this.itemsFactura[index].cantidad_item)),
+        new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.itemsFactura[index].total)]);
+      }
+    }
+    data.push(["", "", "TOTAL", Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.total)]);
+    arrayData.push(data);
+    console.log(arrayData);
+
+    for (let index = 0; index < arrayData.length; index++) {
+      pdf.add(await new Img('../../../assets/images/marca_agua_doc.png').height(500).width(300).relativePosition(100, 100).build());
+      pdf.add(await new Img('../../../assets/images/logo_fac.png').height(80).width(250).relativePosition(0, 0).build());
+      if (!this.esCotizacion) {
+        pdf.add(
+          new Txt('FACTURA No: ' + this.facturaSeleccionada.num_factura).bold().italics().fontSize(18).relativePosition(260, 0).end,
+        );
+      }
+      else {
+        pdf.add(
+          new Txt('COTIZACION No: ' + this.facturaSeleccionada.num_factura).bold().italics().fontSize(18).relativePosition(260, 0).end,
+        );
+      }
+      pdf.add(
+        new Txt('FECHA: ' + fecha.getDate() + '-' + fecha.getMonth() + '-' + fecha.getFullYear())
+          .bold().italics().fontSize(10).relativePosition(260, 25).end
+      );
+      pdf.add(
+        new Txt('CLIENTE: ' + this.facturaSeleccionada.CliCliente.nombre).bold().italics().fontSize(10).relativePosition(260, 35).end
+      );
+      pdf.add(
+        new Txt('IDENTIFICACION: ' + this.facturaSeleccionada.CliCliente.identificacion).bold().italics().fontSize(10).relativePosition(260, 45).end
+      );
+      pdf.add(
+        new Txt('CELULAR: ' + this.facturaSeleccionada.CliCliente.celular).bold().italics().fontSize(10).relativePosition(260, 55).end
+      );
+      pdf.add(
+        new Txt('CELULAR: ' + this.facturaSeleccionada.CliCliente.celular).bold().italics().fontSize(10).relativePosition(260, 55).end
+      );
+
+
+      if (index == arrayData.length - 1) {
+
+        pdf.add(
+          new Table(arrayData[index]).widths(['auto', '*', 'auto', 'auto']).relativePosition(0, 105).end
+        );
+      } else {
+
+        pdf.add(
+          new Table(arrayData[index]).widths(['auto', '*', 'auto', 'auto']).relativePosition(0, 105).pageBreak("after").end
+        );
+      }
+
+    }
+    let y = 0;
+    if (arrayData[arrayData.length - 1].length > 25) {
+      pdf.add(
+        new Txt('').bold().italics().fontSize(20).relativePosition(0, y).pageBreak("after").end
+      );
+    } else {
+      y = arrayData[arrayData.length - 1].length * 20 + 105;
+    }
+    pdf.add(
+      new Txt('SUBTOTAL: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.sub_total) + 'VR TRANSPORTE: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.transporte) + ' VR DESCUENTO[' + this.facturaSeleccionada.descuento + '%] ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.vr_descuento) + ' TOTAL: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.total)).bold().italics().fontSize(10).relativePosition(0, y).end
+    );
+    console.log("aarrra", arrayData[arrayData.length - 1].length);
+    if (this.facturaSeleccionada.FinAboFacs.length > 0) {
+
+
+      if (arrayData[arrayData.length - 1].length > 25) {
+        pdf.add(
+          new Txt('ABONOS').bold().italics().fontSize(20).relativePosition(0, y).pageBreak("before").end
+        );
+      } else {
+        y = arrayData[arrayData.length - 1].length * 20 + 105;
+        console.log("uyyyyyyyyyy", y);
+        pdf.add(
+          new Txt('ABONOS').bold().italics().fontSize(20).relativePosition(0, y).end
+        );
+      }
+      y = y + 20;
+      let deuda = this.facturaSeleccionada.total;
+      for (const element of this.facturaSeleccionada.FinAboFacs) {
+        let fec_abo = new Date(element.fec_abono);
+        pdf.add(
+          new Txt(
+            'Fecha: ' + fecha.getDate() + '-' + fecha.getMonth() + '-' + fecha.getFullYear() + " " +
+            'Deuda: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(deuda) + " " +
+            'Pago: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(element.pago) + " " +
+            'Regreso: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(element.regreso) + " " +
+            'Saldo: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(element.saldo)
+          ).bold().italics().fontSize(10).relativePosition(0, y).end
+        );
+        y = y + 10;
+        deuda = element.saldo;
+      }
+    }
+
+    pdf.create().download(this.facturaSeleccionada.num_factura);
+  }
+
+  mostrarModalPago() {
+    console.log("creating abono");
+
+    this.pagoForm = new FormGroup({
+      abono: new FormControl(0, [Validators.pattern('^[0-9]+$'), Validators.required, Validators.min(50), Validators.max(this.facturaSeleccionada.saldo)]),
+      pago: new FormControl(0, [Validators.pattern('^[0-9]+$'), Validators.required, Validators.min(50)])
+    });
+    this.oculto = '';
+
+  }
+
+  agregarPagoFacturaId() {
+    console.log("this button ready pago factura");
+    if (this.pagoForm.invalid || (this.pagoForm.value.pago - this.pagoForm.value.abono) < 0) { return; }
+    let abono = {
+      id_factura: this.facturaSeleccionada.id_factura,
+      abono: this.pagoForm.value.abono,
+      pago: this.pagoForm.value.pago,
+    }
+    this._finFacturaService.agregarPagoFacturaId(abono)
+      .subscribe((res: any) => {
+        console.log('save recib', res);
+        //this.router.navigate(['facturar/' + res.result]);
+        this.redirectTo('facturar/' + this.facturaSeleccionada.id_factura);
+        //this.ngOnInit();
+      });
+
+  }
+  cerrarModalPago() {
+    this.oculto = 'oculto';
+  }
 }
-
-
-

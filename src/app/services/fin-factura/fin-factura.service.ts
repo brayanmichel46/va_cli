@@ -20,9 +20,9 @@ export class FinFacturaService {
     this.token = this.segUsuarioService.token;
   }
 
-  guardarFactura(cliente: any, itemsFactura: any, totales: any, datosGenerales: any) {
+  guardarFactura(cliente: any, itemsFactura: any, datosGenerales: any) {
     let url = URL_SERVICIOS + '/financiero/guardarfactura?token=' + this.token;
-    return this.http.post(url, { cliente, itemsFactura, totales, datosGenerales })
+    return this.http.post(url, { cliente, itemsFactura, datosGenerales })
       .map((res: any) => {
         return res;
       });
@@ -30,6 +30,13 @@ export class FinFacturaService {
   obtenerFactura(id_factura: any) {
     let url = URL_SERVICIOS + '/financiero/obtenerfactura?token=' + this.token;
     return this.http.post(url, { id_factura })
+      .map((res: any) => {
+        return res;
+      });
+  }
+  agregarPagoFacturaId(abono: any) {
+    let url = URL_SERVICIOS + '/financiero/agregarPagoFacturaId?token=' + this.token;
+    return this.http.post(url, { abono })
       .map((res: any) => {
         return res;
       });

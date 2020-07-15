@@ -30,6 +30,12 @@ import { FacturarComponent } from './facturar/facturar.component';
 
 import { AutocompleteLibModule } from 'angular-ng-autocomplete';
 
+import { PdfMakeWrapper } from 'pdfmake-wrapper';
+import pdfFonts from "pdfmake/build/vfs_fonts"; // fonts provided for pdfmake
+
+// Set the fonts to use
+PdfMakeWrapper.setFonts(pdfFonts);
+
 @NgModule({
   declarations: [
     DashboardComponent,
