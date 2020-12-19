@@ -1,31 +1,67 @@
 <div class="card">
   <div class="card-header bg-info">
-    <h4 class="m-b-0 text-white" style="display: inline;">Factura <span *ngIf="facturaSeleccionada">No
-        {{facturaSeleccionada.num_factura}} Estado: {{facturaSeleccionada.estado}}</span></h4>
-    <div class="card-actions">
-      <button class="btn btn-xs btn-success" (click)="mostrarModalPago()"
+    <h4 class="m-b-0 text-white" style="display: inline;"><span *ngIf="!esCotizacion">factura </span><span
+        *ngIf="esCotizacion">Cotizacion </span></h4>
+    <div class="card-actions" *ngIf="facturaSeleccionada">
+      <button class="btn btn-xs btn-dark" (click)="mostrarModalPago()"
         *ngIf="esConsulta && !esCotizacion && facturaSeleccionada.saldo>0">
-        <li class="fa fa-money"></li>
+        <li class="fa fa-usd fa-lg"></li>
       </button>
-      <button class="btn btn-xs btn-warning" (click)="generatePdf()" *ngIf="esConsulta">
-        <li class="fa fa-file"></li>
+      <button class="btn btn-xs btn-danger" (click)="generatePdf()" *ngIf="esConsulta">
+        <li class="fa fa-file-pdf-o fa-lg"></li>
       </button>
-      <button class="btn btn-xs btn-success" (click)="esConsulta=false" *ngIf="esConsulta">
-        <li class="fa fa-edit"></li>
+      <button class="btn btn-xs btn-warning" (click)="esConsulta=false" *ngIf="esConsulta && !noEditar">
+        <li class="fa fa-pencil fa-lg"></li>
       </button>
-      <button class="btn btn-xs btn-danger" (click)="redirectTo()" *ngIf="facturaSeleccionada && !esConsulta">
-        <li class="fa fa-times"></li>
+      <button class="btn btn-xs btn-danger" (click)="redirectTo()" *ngIf="!esConsulta">
+        <li class="fa fa-ban fa-lg"></li>
       </button>
     </div>
   </div>
   <div class="card-body">
     <form ngNativeValidate [formGroup]="clienteForm" (ngSubmit)="createClient()" action="#">
       <fieldset [disabled]="esConsulta">
-        <div class="form-body">
-          <h3 class="card-title">Datos generales</h3>
-          <p *ngIf="facturaSeleccionada">Debe: {{facturaSeleccionada.saldo}}</p>
-          <p *ngIf="facturaSeleccionada">Total: {{facturaSeleccionada.total}}</p>
-          <hr>
+        <div class="form-body sinpading">
+          <hr class="lineBlue" *ngIf="facturaSeleccionada">
+          <span class="lstick" *ngIf="facturaSeleccionada"></span>
+          <span class="font-bold" *ngIf="facturaSeleccionada">Informacion de la <span *ngIf="!esCotizacion"
+              class="font-bold">factura</span><span *ngIf="esCotizacion" class="font-bold">Cotizacion</span></span>
+          <br *ngIf="facturaSeleccionada">
+          <!--           <span *ngIf="facturaSeleccionada" class="font-bold">Saldo: {{facturaSeleccionada.saldo}}  </span>
+          <span *ngIf="facturaSeleccionada" class="font-bold">Total: {{facturaSeleccionada.total}}</span><br> -->
+          <table class="table vm font-17 m-b-0 sinpading" *ngIf="facturaSeleccionada">
+            <tbody>
+
+              <tr>
+                <td class="font-bold b-0">Numero</td>
+                <td class="text-right font-bold b-0">{{facturaSeleccionada.num_factura}}</td>
+              </tr>
+              <tr>
+                <td class="font-bold">Fecha</td>
+                <td class="text-right font-bold">{{facturaSeleccionada.fec_factura | date:'dd-MM-yyyy'}}</td>
+              </tr>
+              <tr>
+                <td class="font-bold b-0">Estado</td>
+                <td class="text-right font-bold b-0">{{facturaSeleccionada.estado}}</td>
+              </tr>
+              <tr *ngIf="!esCotizacion">
+                <td class="font-bold">Total</td>
+                <td class="text-right font-bold">{{facturaSeleccionada.total | currency}}</td>
+              </tr>
+              <tr *ngIf="!esCotizacion">
+                <td class=" font-bold">Abono</td>
+                <td class="text-right font-bold ">{{(facturaSeleccionada.total-facturaSeleccionada.saldo) | currency}}
+                </td>
+              </tr>
+              <tr *ngIf="!esCotizacion">
+                <td class="font-bold">Saldo</td>
+                <td class="text-right font-bold">{{facturaSeleccionada.saldo | currency}}</td>
+              </tr>
+            </tbody>
+          </table>
+          <hr class="lineBlue">
+          <span class="lstick"></span>
+          <span class="font-bold">Información del cliente</span>
           <div class="row p-t-1">
             <div class="col-md-4">
               <div class="form-group">
@@ -111,157 +147,30 @@
               </div>
             </div>
           </div>
-          <!--/row-
-          <div class="row">
-              <div class="col-md-6">
-                  <div class="form-group has-success">
-                      <label class="control-label">Gender</label>
-                      <select class="form-control custom-select">
-                          <option value="">Male</option>
-                          <option value="">Female</option>
-                      </select>
-                      <small class="form-control-feedback"> Select your gender </small> </div>
-              </div>
-              <!--/span
-              <div class="col-md-6">
-                  <div class="form-group">
-                      <label class="control-label">Date of Birth</label>
-                      <input type="date" class="form-control" placeholder="dd/mm/yyyy">
-                  </div>
-              </div>
-              <!--/span
-          </div>
-          <!--/row-
-          <div class="row">
-              <div class="col-md-6">
-                  <div class="form-group">
-                      <label class="control-label">Category</label>
-                      <select class="form-control custom-select" data-placeholder="Choose a Category" tabindex="1">
-                          <option value="Category 1">Category 1</option>
-                          <option value="Category 2">Category 2</option>
-                          <option value="Category 3">Category 5</option>
-                          <option value="Category 4">Category 4</option>
-                      </select>
-                  </div>
-              </div>
-              <!--/span
-              <div class="col-md-6">
-                  <div class="form-group">
-                      <label class="control-label">Membership</label>
-                      <div class="m-b-10">
-                          <label class="custom-control custom-radio">
-                              <input id="radio1" name="radio" type="radio" class="custom-control-input">
-                              <span class="custom-control-label">Free</span>
-                          </label>
-                          <label class="custom-control custom-radio">
-                              <input id="radio2" name="radio" type="radio" class="custom-control-input">
-                              <span class="custom-control-label">Paid</span>
-                          </label>
-                      </div>
-                  </div>
-              </div>
-              <!--/span
-          </div>
-          <!--/row
-          <h3 class="box-title m-t-40">Address</h3>
-          <hr>
-          <div class="row">
-              <div class="col-md-12 ">
-                  <div class="form-group">
-                      <label>Street</label>
-                      <input type="text" class="form-control">
-                  </div>
-              </div>
-          </div>
-          <div class="row">
-              <div class="col-md-6">
-                  <div class="form-group">
-                      <label>City</label>
-                      <input type="text" class="form-control">
-                  </div>
-              </div>
-              <!--/span
-              <div class="col-md-6">
-                  <div class="form-group">
-                      <label>State</label>
-                      <input type="text" class="form-control">
-                  </div>
-              </div>
-              <!--/span
-          </div>
-          <!--/row
-          <div class="row">
-              <div class="col-md-6">
-                  <div class="form-group">
-                      <label>Post Code</label>
-                      <input type="text" class="form-control">
-                  </div>
-              </div>
-              <!--/span
-              <div class="col-md-6">
-                  <div class="form-group">
-                      <label>Country</label>
-                      <select class="form-control custom-select">
-                          <option>--Select your Country--</option>
-                          <option>India</option>
-                          <option>Sri Lanka</option>
-                          <option>USA</option>
-                      </select>
-                  </div>
-              </div>
-              <!--/span
-          </div>-->
         </div>
-
         <div class="form-actions text-center" *ngIf="!esConsulta">
-          <button type="submit" class="btn btn-success" *ngIf="!clienteSeleccionado" [disabled]="clienteForm.invalid">
+          <button type="submit" class="btn btn-dark" *ngIf="!clienteSeleccionado" [disabled]="clienteForm.invalid">
             <i class="fa fa-check"></i> Crear cliente</button>
           <button type="button" class="btn btn-info" *ngIf="clienteSeleccionado" (click)="updateClient()"
             [disabled]="clienteForm.invalid"><i class="fa fa-pencil"></i> Actualizar cliente</button>
         </div>
       </fieldset>
     </form>
-
-    <!--   <form ngNativeValidate [formGroup]="datosGeneralesForm" action="#">
-      <div class="form-body">
-        <div class="row p-t-1">
-          <div class="col-md-6">
-            <div class="form-group">
-              <label class="control-label">Transporte</label>
-              <input type="text" id="transporte" formControlName="transporte"
-                [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('transporte').valid}"
-                placeholder="Digite transporte" (change)="changeDatosGenerales()">
-              <small *ngIf="datosGeneralesForm.controls['transporte'].errors?.required" class="text-warning">
-                Transporte es requerido
-              </small>
-            </div>
-          </div>
-          <div class="col-md-6">
-            <div class="form-group">
-              <label class="control-label">Descuento</label>
-              <input type="text" id="descuento" formControlName="descuento"
-                [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('descuento').valid}"
-                placeholder="Digite descuento" (change)="changeDatosGenerales()">
-              <small *ngIf="datosGeneralesForm.controls['descuento'].errors?.required" class="text-warning">
-                Descuento es requerido
-              </small>
-            </div>
-          </div>
-        </div>
-      </div>
-    </form> -->
   </div>
 </div>
 
 <div class="card" *ngIf="!esConsulta">
   <div class="card-body" #card_inventario>
+    <hr class="lineBlue">
+    <span class="lstick"></span>
+    <span class="font-bold">Añadir producto</span><br>
     <form ngNativeValidate [formGroup]="invSucursalForm" (ngSubmit)="addItemFactura()" action="#">
 
-      <div class="form-body">
+      <div class="form-body sinpading">
         <div class="row p-t-1">
           <div class="col-md-6">
             <div class="form-group">
-              <label class="control-label">Nuevo item</label>
+              <label class="control-label">Pcto</label>
 
               <ng-autocomplete formControlName="descripcion" [data]="invSucursal" [searchKeyword]="keywordInvSucursal"
                 (selected)='selectEvent($event,2)' (inputChanged)='onChangeSearch($event,2)'
@@ -281,13 +190,7 @@
               </small>
             </div>
           </div>
-          <!-- <div class="col-md-4">
-            <div class="form-group">
-              <label class="control-label">Codigo</label>
-              <input type="text" id="codigo" formControlName="codigo" [ngClass]="{'form-control': true}"
-                placeholder="Digite codigo" disabled="true">
-            </div>
-          </div> -->
+
           <div class="col-md-6">
             <div class="form-group" *ngIf="!banBtnCambio">
               <label class="control-label">Cantidad Item</label>
@@ -307,6 +210,34 @@
             </div>
           </div>
         </div>
+        <div class="row p-t-1" *ngIf="banSinRegistrar">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="control-label">Detalle</label>
+              <input type="text" formControlName="detalle"
+                [ngClass]="{'form-control': true,'warning-input': (!invSucursalForm.get('detalle').valid)}"
+                placeholder="Digite detalle">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="control-label">Vr Unitario</label>
+              <input type="text" formControlName="vr_unitario"
+                [ngClass]="{'form-control': true,'warning-input': (!invSucursalForm.get('vr_unitario').valid)}"
+                placeholder="Digite valor unitario">
+            </div>
+          </div>
+        </div>
+        <div class="row p-t-1" *ngIf="invSucursalSeleccionado" >
+          <div class="col-md-12">
+            <span *ngFor="let componente of invSucursalSeleccionado.Componentes,let i=index" >
+              <span *ngIf="componente.seleccionar=='S'" class="conpading">
+                <input [(ngModel)]="componente.seleccionado" id="{{i}}" type="checkbox" class="filled-in chk-col-light-blue" [ngModelOptions]="{standalone: true}">
+                <label for="{{i}}" *ngIf="componente.seleccionar=='S'"> {{componente.detalle}} </label>
+              </span>
+            </span>
+          </div>
+        </div>
         <div class="row p-t-1">
           <div class="col-md-12 text-center">
             <div class="form-group">
@@ -315,10 +246,11 @@
             </div>
           </div>
         </div>
+
       </div>
       <div class="form-actions text-center" *ngIf="!editar && !banBtnCambio">
         <!-- [disabled]="invSucursalForm.invalid" -->
-        <button type="submit" class="btn btn-success" [disabled]="invSucursalForm.invalid || !maxValidoParametro()"> <i
+        <button type="submit" class="btn btn-dark" [disabled]="invSucursalForm.invalid || !maxValidoParametro()"> <i
             class="fa fa-check"></i> Añadir</button>
         <br>
 
@@ -339,16 +271,16 @@
 <div class="card">
   <div class="card-body" #table_items>
 
-
     <!--  <h3>Clientes registrados ( <small>{{totalRegistros}}</small> )</h3> -->
+
+    <hr class="lineBlue">
+    <span class="lstick"></span>
+    <span class="font-bold">Productos añadidos: {{itemsFactura.length }}</span><br>
     <input [(ngModel)]="instalado" id="checkbox-signup" type="checkbox" class="filled-in chk-col-light-blue"
       (change)="changeVrVenta()" *ngIf="!esConsulta">
-    <label for="checkbox-signup" *ngIf="!esConsulta"> Instalado </label>
-    <h4><b># Articulos=</b><b>[{{itemsFactura.length }}]</b> <b>Total=[</b><b
-        class="text-error">{{totales.total | currency:'$'}}</b>]
-    </h4>
+    <label for="checkbox-signup" *ngIf="!esConsulta"> Instalado? </label>
     <div class="table-responsive m-t-20">
-      <table class="table table-striped">
+      <table class="table table-striped sinpading">
         <thead>
           <th *ngIf="!esConsulta"></th>
           <th>Cant</th>
@@ -364,10 +296,10 @@
             <td class="text-center" *ngIf="!esConsulta">
 
               <button class="btn btn-xs btn-info" (click)="editItem(item)" *ngIf="!banBtnCambio">
-                <li class="fa fa-edit"></li>
+                <li class="fa fa-pencil"></li>
               </button>
               <button class="btn btn-xs btn-danger" (click)="deletedItem(item)">
-                <li class="fa fa-times"></li>
+                <li class="fa fa-trash-o"></li>
               </button>
             </td>
             <td>{{item.cantidad_item}}</td>
@@ -376,7 +308,7 @@
                 *ngIf="item.cambio=='S' && !esConsulta" (change)="selectCambio(item)">
               <label for="checkbox-item-{{i}}" style="display: inline;"></label>
               [<span *ngFor="let p of item.parametros;let i = index"><b> {{p}} </b><b
-                  *ngIf="i<item.parametros.length-1"> X </b></span> ] {{item.codigo}} {{item.descripcion}}</td>
+                  *ngIf="i<item.parametros.length-1"> X </b></span> ] {{item.codigo}} {{item.descripcion}} <span *ngIf="item.accesorio" >{{item.accesorio}}</span></td>
             <td>{{item.total/item.cantidad_item | currency: '$ '}}</td>
             <td>{{item.total | currency: '$ '}}</td>
           </tr>
@@ -387,10 +319,10 @@
       <fieldset [disabled]="esConsulta">
         <div class="form-body">
           <div class="row p-t-1">
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="form-group">
                 <label class="control-label">Transporte</label>
-                <input type="text" id="transporte" formControlName="transporte"
+                <input type="number" id="transporte" formControlName="transporte"
                   [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('transporte').valid}"
                   placeholder="Digite transporte" (change)="changeDatosGenerales()">
                 <small *ngIf="datosGeneralesForm.controls['transporte'].errors?.required" class="text-warning">
@@ -398,10 +330,10 @@
                 </small>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="form-group">
                 <label class="control-label">Descuento</label>
-                <input type="text" id="descuento" formControlName="descuento"
+                <input type="number" id="descuento" formControlName="descuento"
                   [ngClass]="{'form-control': true,'warning-input': !datosGeneralesForm.get('descuento').valid}"
                   placeholder="Digite descuento" (change)="changeDatosGenerales()">
                 <small *ngIf="datosGeneralesForm.controls['descuento'].errors?.required" class="text-warning">
@@ -409,7 +341,7 @@
                 </small>
               </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
               <div class="form-group">
                 <label class="control-label">Pago</label>
                 <input type="text" id="abono" formControlName="abono"
@@ -421,11 +353,23 @@
                 </small>
               </div>
             </div>
+            <div class="col-md-3">
+              <div class="form-group">
+                <label class="control-label">Regreso</label><br>
+                <span class="lstick"></span>
+                <span class="font-bold"
+                  *ngIf="datosGeneralesForm.value.abono>totales.total">{{datosGeneralesForm.value.abono-totales.total | currency}}</span>
+                <span *ngIf="datosGeneralesForm.value.abono<totales.total"> 0 </span>
+              </div>
+            </div>
           </div>
         </div>
       </fieldset>
     </form>
-    <h4><b># Articulos= {{totales.cantidad_items}} Sub Total= {{totales.sub_total}} Vr
+    <hr class="lineBlue">
+    <span class="lstick"></span>
+    <span class="font-bold">Resumen de Pago</span><br>
+    <!--     <h4><b># Articulos= {{totales.cantidad_items}} Sub Total= {{totales.sub_total}} Vr
         Transporte= {{totales.transporte}} Vr Descuento = {{totales.vr_descuento}} Vr
         antes de iva= {{totales.vr_antes_iva}} Vr de iva= {{totales.vr_iva}} Total F=
         {{totales.total}} Saldo: <span *ngIf="totales.total>=datosGeneralesForm.value.abono">
@@ -435,7 +379,42 @@
         <span *ngIf="datosGeneralesForm.value.abono>totales.total">
           {{datosGeneralesForm.value.abono-totales.total | currency}} </span>
         <span *ngIf="datosGeneralesForm.value.abono<totales.total"> 0 </span>
-      </b></h4>
+      </b></h4> -->
+    <table class="table vm font-17 m-b-0 sinpading">
+      <tbody>
+
+        <tr>
+          <td class="b-0  font-bold">Subtotal</td>
+          <td class="text-right font-bold b-0 ">{{totales.sub_total | currency}}</td>
+        </tr>
+        <tr>
+          <td class=" font-bold">Descuento</td>
+          <td class="text-right font-bold ">{{totales.vr_descuento | currency}}</td>
+        </tr>
+        <tr>
+          <td class=" font-bold">Transporte</td>
+          <td class="text-right font-bold ">{{totales.transporte | currency}}</td>
+        </tr>
+        <tr>
+          <td class="font-20 font-bold "><b>TOTAL</b></td>
+          <td class="text-right font-20 font-bold  colorAzul">{{totales.total  | currency}}</td>
+        </tr>
+
+        <!--         <tr>
+          <td class="sinpading">Abono</td>
+          <td class="text-right font-bold sinpading">{{totales.total-datosGeneralesForm.value.abono | currency}}</td>
+        </tr>
+        <tr>
+          <td class="sinpading">Saldo</td>
+          <td class="text-right font-medium sinpading">{{totales.total-datosGeneralesForm.value.abono | currency}}</td>
+        </tr>
+        <tr>
+          <td class="sinpading">Regreso</td>
+          <td class="text-right font-medium sinpading">{{datosGeneralesForm.value.abono-totales.total | currency}}</td>
+        </tr> -->
+
+      </tbody>
+    </table>
     <!-- <div class="text-center">
       <button (click)="cambiarDesde('A')" class="btn btn-success">
 
@@ -445,8 +424,9 @@
         <li class="fa fa-fast-forward"></li>
       </button>
     </div> -->
-    <div class="text-center" *ngIf="!esConsulta">
-      <button (click)="guardarFactura(false)" class="btn btn-success" [disabled]="!validarFormularios(false)">
+    <br>
+    <div class="text-center" *ngIf="!esConsulta && !noEditar">
+      <button (click)="guardarFactura(false)" class="btn btn-dark" [disabled]="!validarFormularios(false)">
         <i class="fa fa-check"></i>Facturar</button>
       <button (click)="guardarFactura(true)" class="btn btn-info" [disabled]="!validarFormularios(true)">
         <i class="fa fa-check"></i>Cotizar</button>
@@ -464,15 +444,15 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <div class="modal-body text-center" >
-          <form ngNativeValidate [formGroup]="pagoForm" action="#" >
+        <div class="modal-body text-center">
+          <form ngNativeValidate [formGroup]="pagoForm" action="#">
             <!-- <fieldset [disabled]="esConsulta"> -->
             <div class="form-body">
               <div class="row p-t-1">
                 <div class="col-md-12">
                   <div class="form-group">
                     <label class="control-label">Abono</label>
-                    <input type="text" id="abono" formControlName="abono"
+                    <input type="number" id="abono" formControlName="abono"
                       [ngClass]="{'form-control': true,'warning-input': !pagoForm.get('abono').valid}"
                       placeholder="Digite abono" [readOnly]="(facturaSeleccionada && esCotizacion)">
                     <small *ngIf="pagoForm.controls['abono'].errors?.required" class="text-warning">
@@ -486,7 +466,7 @@
                 <div class="col-md-12">
                   <div class="form-group">
                     <label class="control-label">Pago</label>
-                    <input type="text" id="pago" formControlName="pago"
+                    <input type="number" id="pago" formControlName="pago"
                       [ngClass]="{'form-control': true,'warning-input': !pagoForm.get('pago').valid}"
                       placeholder="Digite pago" [readOnly]="(facturaSeleccionada && esCotizacion)">
                     <small *ngIf="pagoForm.controls['pago'].errors?.required" class="text-warning">
@@ -520,8 +500,9 @@
           </form>
         </div>
         <div class="modal-footer">
-          <button [disabled]="pagoForm.invalid" (click)="agregarPagoFacturaId()" type="button" class="btn btn-secondary">Realizar Pago</button>
-          <button (click)="cerrarModalPago()" type="button" class="btn btn-primary">Cerrar</button>
+          <button [disabled]="pagoForm.invalid" (click)="agregarPagoFacturaId()" type="button"
+            class="btn btn-dark">Realizar Pago</button>
+          <button (click)="cerrarModalPago()" type="button" class="btn btn-danger">Cerrar</button>
         </div>
       </div>
     </div>

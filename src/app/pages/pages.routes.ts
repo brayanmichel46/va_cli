@@ -1,3 +1,6 @@
+import { ListPreciosComponent } from './list-precios/list-precios.component';
+import { MatrizMarqueteriaComponent } from './matriz-marqueteria/matriz-marqueteria.component';
+import { ListFacturasComponent } from './list-facturas/list-facturas.component';
 import { FacturarComponent } from './facturar/facturar.component';
 import { ClientesComponent } from './clientes/clientes.component';
 import { RouterModule, Routes } from '@angular/router';
@@ -34,6 +37,9 @@ const pagesRoutes: Routes = [
             /* @description: Rutas de ventas
             */
            { path: 'facturar/:id', component: FacturarComponent, data: { titulo: 'Facturar' } },
+           { path: 'list-facturas', component: ListFacturasComponent, data: { titulo: 'Listado Facturas' } },
+           { path: 'list-precios', component: ListPreciosComponent, data: { titulo: 'Listado Precios' } },
+           { path: 'matriz-marqueteria', component: MatrizMarqueteriaComponent, data: { titulo: 'Matriz marqueteria' } },
             { path: '', redirectTo: '/dashboard', pathMatch: 'full' }
         ]
     }

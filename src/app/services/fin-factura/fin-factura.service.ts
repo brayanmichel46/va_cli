@@ -41,4 +41,13 @@ export class FinFacturaService {
         return res;
       });
   }
+  buscarFacturas( termino: string, desde: number = 0 ) {
+    let url = URL_SERVICIOS + '/va/busquedacoleccion?token=' + this.token;
+    return this.http.post( url, {coleccion: 'facturas', busqueda: termino,desde:desde})
+    .map((resp: any) => resp.facturas);
+  }
+  obtenerFacturas( desde: number = 0) {
+    let url = URL_SERVICIOS + '/financiero/obtenerfacturas?token=' + this.token;
+    return this.http.post( url, { desde } );
+  }
 }

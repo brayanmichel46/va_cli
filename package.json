@@ -24,6 +24,7 @@
     "angular-ng-autocomplete": "^2.0.1",
     "chart.js": "^2.9.3",
     "core-js": "^3.6.4",
+    "font-awesome": "^4.7.0",
     "ng2-charts": "^2.3.0",
     "ngx-chat-ui": "^0.1.4",
     "pdfmake": "^0.1.65",

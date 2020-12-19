@@ -1,0 +1,13 @@
+<div class="text-center">
+  <button (click)="anterior()" class="btn btn-info btn-sm">
+    <li class="fa fa-angle-double-left fa-lg"></li>
+  </button>
+  <span *ngFor="let p of paginas" >
+    <button class="btn btn-dark btn-sm" (click)="onCambiarPagina(p*numElePag)" *ngIf="(p>=(desde/numElePag) && p<((desde/numElePag)+2)) || (p<=(desde/numElePag) && p>((desde/numElePag)-2)) || p==0 || p>=((numEle/numElePag)-1)">
+      {{p+1}}
+    </button>
+  </span>
+  <button (click)="siguiente()" class="btn btn-info btn-sm">
+    <li class="fa fa-angle-double-right fa-lg"></li>
+  </button>
+</div>

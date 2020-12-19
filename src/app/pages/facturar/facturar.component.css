@@ -1,1 +1,14 @@
-
+.sinpading td,label {
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+.colorAzul{
+  background-color:#007bff;
+  color:white;
+}
+.lineBlue{
+  border-color: #007bff;
+}
+.conpading{
+  padding-right: 10px;
+}

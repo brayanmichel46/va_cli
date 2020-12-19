@@ -1,0 +1,45 @@
+<div class="card">
+  <div class="card-body" #card_inventario>
+    <hr class="lineBlue">
+          <span class="lstick"></span>
+          <span class="font-bold">Añadir producto</span><br>
+    <form ngNativeValidate [formGroup]="invSucursalForm" (ngSubmit)="addItemFactura()" action="#">
+
+      <div class="form-body sinpading">
+        <div class="row p-t-1">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label class="control-label">Pcto</label>
+
+              <ng-autocomplete formControlName="descripcion" [data]="invSucursal" [searchKeyword]="keywordInvSucursal"
+                (selected)='selectEvent($event)' (inputChanged)='onChangeSearch($event)'
+                (inputCleared)="clearedEvente()" (inputFocused)='onFocused($event)' [itemTemplate]="itemTemplateinv"
+                [notFoundTemplate]="notFoundTemplateinv">
+              </ng-autocomplete>
+
+              <ng-template #itemTemplateinv let-item>
+                <a [innerHTML]="'<b>'+item.codigo+' </b>'+item.descripcion"></a>
+              </ng-template>
+
+              <ng-template #notFoundTemplateinv let-notFound>
+                <div [innerHTML]="notFound"></div>
+              </ng-template>
+              <small *ngIf="invSucursalForm.controls['descripcion'].errors?.required" class="text-warning">
+                Inventario requerido
+              </small>
+            </div>
+          </div>
+
+        </div>
+        <div class="row p-t-1">
+      </div>
+      </div>
+      <div class="form-actions text-center">
+        <!-- [disabled]="invSucursalForm.invalid" -->
+        <button type="submit" class="btn btn-dark" [disabled]="invSucursalForm.invalid">
+          <i class="fa fa-check"></i> Calcular</button>
+        <br>
+      </div>
+    </form>
+  </div>
+</div>

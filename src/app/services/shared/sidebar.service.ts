@@ -27,7 +27,10 @@ export class SidebarService {
       titulo: 'Ventas',
       icon: 'mdi mdi-folder-lock-open',
       submenu: [
-        { titulo: 'Facturar', url: '/facturar' },
+        { titulo: 'Facturar', url: '/facturar/-1' },
+        { titulo: 'Listado Facturas', url: '/list-facturas' },
+        { titulo: 'Listado Precios', url: '/list-precios' },
+        { titulo: 'Matriz Marqueteria', url:'/matriz-marqueteria'}
       ]
     }
   ];

@@ -1,0 +1,78 @@
+<div class="row animated fadeIn">
+  <div class="col-md-12 col-sm-12">
+    <div class="card">
+      <div class="card-body">
+        <input #input (keyup)="cambiarDesde('R',input.value,null)" type="text" class="form-control"
+          placeholder="Buscar inventario...">
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row animated fadeIn" *ngIf="cargando">
+  <div class="col-sm-12">
+    <div class="alert alert-warning text-center">
+      <strong>Cargando</strong>
+      <br>
+      <i class="fa fa-refresh fa-spin fa-2x"></i>
+      <br>
+      <strong>Espere por favor</strong>
+    </div>
+  </div>
+</div>
+<div class="row animated fadeIn" *ngIf="!cargando">
+  <div class="col-md-12 col-sm-12">
+    <div class="card">
+      <div class="card-body">
+
+        <h3>No Registros ( <small>{{totalRegistros}}</small> )</h3>
+        <div class="table-responsive m-t-20">
+          <table class="table table-hover">
+            <thead>
+              <th class="static">Descripcion</th>
+              <th class="first-col">Cantidad</th>
+              <th>Costo promedio</th>
+              <th>Vr local</th>
+              <th>Vr Instalado</th>
+            </thead>
+            <tbody>
+              <tr *ngFor="let inv of inventario">
+
+                <td class="static">
+                  <button (click)='inv.ban_editar=true' *ngIf='!inv.ban_editar' class="btn btn-sm btn-info">
+                    <li class="fa fa-pencil"></li>
+                  </button>
+                  <button *ngIf='inv.ban_editar' (click)='actualizarInventario(inv)' class="btn btn-sm btn-success">
+                    <li class="fa fa-check"></li>
+                  </button>
+                  <button *ngIf='inv.ban_editar' (click)='inv.ban_editar=false' class="btn btn-sm btn-danger">
+                    <li class="fa fa-times"></li>
+                  </button>
+                  {{inv.descripcion}}</td>
+                <td class="first-col">{{inv.cantidad}}</td>
+
+                <td *ngIf="!inv.ban_editar">{{inv.costo_promedio}}</td>
+                <td *ngIf="inv.ban_editar">
+                  <input class="form-control" type="number" step="0.01" required placeholder="costo promedio"
+                    [(ngModel)]="inv.costo_promedio">
+                </td>
+                <td *ngIf="!inv.ban_editar">{{inv.vr_venta_local}}</td>
+                <td *ngIf="inv.ban_editar">
+                  <input class="form-control" type="number" step="0.01" required placeholder="Vr venta"
+                    [(ngModel)]="inv.vr_venta_local">
+                </td>
+                <td *ngIf="!inv.ban_editar">{{inv.vr_venta_domicilio}}</td>
+                <td *ngIf="inv.ban_editar">
+                  <input class="form-control" type="number" step="0.01" required placeholder="Vr instalado"
+                    [(ngModel)]="inv.vr_venta_domicilio">
+                </td>
+
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <app-pagination *ngIf="totalRegistros>=0" [numEle]="totalRegistros" [numElePag]="5"
+          (cambiarPagina)="prueba($event,input.value)"></app-pagination>
+      </div>
+    </div>
+  </div>
+</div>

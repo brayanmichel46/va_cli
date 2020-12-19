@@ -24,9 +24,16 @@ export class InvInvSucService {
     return this.http.post(url, { desde });
   }
 
-  buscarInventarioSucursal(termino: string) {
+  buscarInventarioSucursal(termino: string, desde: number = 0) {
     let url = URL_SERVICIOS + '/va/busquedacoleccion?token=' + this.token;
-    return this.http.post(url, { coleccion: 'inv_sucursal', busqueda: termino })
+    return this.http.post(url, { coleccion: 'inv_sucursal', busqueda: termino,desde:desde })
       .map((resp: any) => resp.inv_sucursal);
-  }  
+  }
+  actualizarInventario( inventario: any ) {
+    let url = URL_SERVICIOS + '/inventario/actualizarinventario?token=' + this.token;
+    return this.http.post( url, {inventario})
+    .map((resp: any) => {
+        return resp.inventario;
+    });
+  }
 }

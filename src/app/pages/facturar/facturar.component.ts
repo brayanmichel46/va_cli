@@ -3,16 +3,15 @@ import { FinDetFacturaService } from './../../services/fin-det-factura/fin-det-f
 import { InvInvSucService } from './../../services/inv-inv-suc/inv-inv-suc.service';
 import { GenPersonaService } from './../../services/gen-persona/gen-persona.service';
 import { GenPersona } from './../../models/genPersona.model';
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, SimpleChanges,Input } from '@angular/core';
 import { FormGroup, FormControl, Validators, FormArray } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { CliCliente } from './../../models/cli-cliente';
 import { CliClienteService } from './../../services/cli-cliente/cli-cliente.service';
 import Swal from 'sweetalert2';
-import { PdfMakeWrapper, Txt, Table, Cell, Img } from 'pdfmake-wrapper';
+import { PdfMakeWrapper, Txt, Table, Img } from 'pdfmake-wrapper';
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
-import { min } from 'rxjs-compat/operator/min';
 pdfMake.vfs = pdfFonts.pdfMake.vfs;
 
 @Component({
@@ -31,13 +30,12 @@ export class FacturarComponent implements OnInit {
   clienteForm: FormGroup;
 
   invSucursal: any[] = [];
-  invSucursalSeleccionado: any;
+  invSucursalSeleccionado:any;
   keywordInvSucursal = 'descripcion';
   invSucursalForm: FormGroup;
   itemsFactura: any[] = [];
   totales: any = {};
   facturaSeleccionada: any = null;
-
   datosGeneralesForm: FormGroup;
 
   pagoForm: FormGroup;
@@ -49,8 +47,11 @@ export class FacturarComponent implements OnInit {
   esConsulta: boolean = false;
   esEdicion: boolean = false;
   esCotizacion: boolean = false;
+  noEditar: boolean = false;
   realizarPago: boolean = false;
   oculto: string = 'oculto';
+  banSinRegistrar: boolean = false;
+
 
   constructor(
     public _cliClienteService: CliClienteService,
@@ -60,18 +61,23 @@ export class FacturarComponent implements OnInit {
     public _finFacturaService: FinFacturaService,
     private rutaActiva: ActivatedRoute,
     private router: Router
-  ) { }
+  ) {}
   ngOnInit() {
-    console.log('entra')
+    /* while(true){
+      console.log("inicia");
+    } */
+
+    console.log("inicia");
+    let a = 2;
+    console.log("inicia", a);
     this.initForm();
     let parametros = this.rutaActiva.snapshot.params;
     if (parseInt(parametros.id, 10) !== -1) {
       this.obtenerFactura(parseInt(parametros.id, 10));
       this.esConsulta = true;
-      console.log("daafslkdjf", this.facturaSeleccionada);
     }
     this.rutaActiva.params.subscribe((params) => {
-      console.log('updatedParams', params);
+
       if (params != parametros) {
         this.redirectTo(this.router.url);
       }
@@ -100,10 +106,21 @@ export class FacturarComponent implements OnInit {
       descuento: new FormControl(0, [Validators.pattern('^[0-9]{1,2}(\\.[0-9]{1,2})?$'), Validators.required]),
       abono: new FormControl(0, [Validators.pattern('^[0-9]+$'), Validators.required])
     });
-
+    /* this.invSucursalForm.get('descripcion')
+      .valueChanges
+      .subscribe(value => {
+        console.log(this.invSucursalSeleccionado, value);
+        if (this.invSucursalSeleccionado.grupo === 'SIN REGISTRAR') {
+          this.banSinRegistrar=true;
+          const v = [Validators.required];
+          this.invSucursalForm.get('detalle').setValidators(v);
+        } else {
+          this.invSucursalForm.get('detalle').setValidators([]);
+        }
+        this.invSucursalForm.updateValueAndValidity();
+      }); */
   }
   selectCambio(item: any) {
-    console.log("entro");
     this.editar = false;
     this.banBtnCambio = false;
     if (!item) {
@@ -181,7 +198,7 @@ export class FacturarComponent implements OnInit {
   }
 
   selectEvent(item, opc) {
-    console.log("Seleccionado", item);
+    console.log("item selec", item);
     if (opc === 1) {
       this.clienteSeleccionado = item;
       this.clienteForm.controls['identificacion'].setValue(this.clienteSeleccionado.identificacion);
@@ -192,16 +209,31 @@ export class FacturarComponent implements OnInit {
       this.clienteForm.controls['celular'].setValue(this.clienteSeleccionado.celular);
     } else if (opc === 2) {
       this.invSucursalSeleccionado = item;
-      console.log("items", this.invSucursalSeleccionado.Componentes);
       this.invSucursalForm.controls['codigo'].setValue(this.invSucursalSeleccionado.codigo);
       this.invSucursalSeleccionado.cambio = this.invSucursalSeleccionado.cambio;
-      console.log('inventario', this.invSucursalSeleccionado);
+      if (this.invSucursalSeleccionado.grupo === 'SIN REGISTRAR') {
 
+        let v = [Validators.required];
+        //this.invSucursalForm.get('detalle').setValidators(v);
+        //this.invSucursalForm.get('vr_unitario').setValidators(v);
+        this.invSucursalForm.addControl('detalle',new FormControl(null, Validators.required));
+        this.invSucursalForm.addControl('vr_unitario',new FormControl(null, Validators.required));
+        //this.testForm.addControl('new', ('', Validators.required));
+        //this.invSucursalForm.updateValueAndValidity();
+        this.banSinRegistrar = true;
+      }else if(this.banSinRegistrar){
+        this.banSinRegistrar = false;
+        this.invSucursalForm.removeControl('detalle');
+        this.invSucursalForm.removeControl('vr_unitario');
+      }
+      console.log("item selec", this.invSucursalSeleccionado);
       for (let index = 0; index < this.invSucursalSeleccionado.n_parametros; index++) {
         this.aniadirParametro();
       }
     } else if (opc === 3) {
       this.datosGeneralesForm.controls['abono'].setValue(item.abono);
+      this.datosGeneralesForm.controls['transporte'].setValue(item.transporte);
+      this.datosGeneralesForm.controls['descuento'].setValue(item.descuento);
     }
   }
 
@@ -234,7 +266,6 @@ export class FacturarComponent implements OnInit {
     //this.cargando = true;
     this._cliClienteService.buscarClientes(termino)
       .subscribe((clientes: CliCliente[]) => {
-        console.log(clientes);
         this.clientes = clientes;
         //this.cargando = false;
       });
@@ -245,16 +276,15 @@ export class FacturarComponent implements OnInit {
       return;
     }
     this._invInvSucService.buscarInventarioSucursal(termino)
-      .subscribe((invSucursal: any) => {
-        console.log(invSucursal);
-        this.invSucursal = invSucursal;
+      .subscribe((resp: any) => {
+        console.log("ivnetariosusususu",resp);
+        this.invSucursal = resp.resultado;
       });
   }
 
 
 
   createClient() {
-    console.log('the method createCliente was executed!');
     if (this.clienteForm.invalid) {
       return;
     }
@@ -282,7 +312,7 @@ export class FacturarComponent implements OnInit {
         this._genPersonaService.crearPersonaCliente(person, client)
           .subscribe(resp => {
             //this.router.navigate(['/login'])
-            console.log('the person was create with sussefull', resp);
+
             Swal.fire('¡Exito!', "Se creo un nuevo cliente: " + resp.datos.persona.identificacion, 'success');
             this.clienteSeleccionado = new CliCliente(
               resp.datos.cliente.direccion,
@@ -301,7 +331,6 @@ export class FacturarComponent implements OnInit {
 
   }
   updateClient() {
-    console.log('the method updateCliente was executed!', this.clienteForm.value.identificacion);
     if (this.clienteForm.invalid) {
       return;
     }
@@ -327,7 +356,7 @@ export class FacturarComponent implements OnInit {
     }).then((result) => {
       if (result.value) {
         this._cliClienteService.actualizarCliente(client).subscribe((cliente: any) => {
-          console.log('clientes', cliente);
+
           Swal.fire('¡Datos Actualizados!', 'Cliente: ' + client.identificacion, 'success');
         });
       }
@@ -335,8 +364,7 @@ export class FacturarComponent implements OnInit {
   }
 
   addItemFactura() {
-    console.log('addItemFactura was executed');
-    console.log(this.invSucursalForm, this.getParametros, this.invSucursalSeleccionado);
+
     let item = {
       Componentes: this.invSucursalSeleccionado.Componentes,
       cambio: this.invSucursalSeleccionado.cambio,
@@ -368,18 +396,21 @@ export class FacturarComponent implements OnInit {
       total: 0,
       parametros: []
     };
-    if (this.invSucursalForm.value.instalado) {
+    if(this.banSinRegistrar){
+      item.descripcion=this.invSucursalForm.value.detalle;
+      item.vr_venta=this.invSucursalForm.value.vr_unitario;
+    } else if (this.invSucursalForm.value.instalado) {
       item.vr_venta = this.invSucursalSeleccionado.vr_venta_domicilio;
     } else if (!this.invSucursalForm.value.instalado) {
       item.vr_venta = this.invSucursalSeleccionado.vr_venta_local;
     }
-    console.log("items", this.itemsFactura);
+
     this.itemsFactura.push(item);
     for (let index = 0; index < this.getParametros.length; index++) {
-      console.log(this.invSucursalForm.get('parametros').value[index]);
+
       item.parametros.push(this.invSucursalForm.get('parametros').value[index]);
     }
-    console.log(item);
+    console.log("items", this.itemsFactura);
     this.calcularPreciosItemsFactura();
   }
 
@@ -390,9 +421,10 @@ export class FacturarComponent implements OnInit {
     };
     this._finDetalleFactura.calcularPreciosItemsFactura(this.itemsFactura, datosGenerales)
       .subscribe((res: any) => {
-        console.log(res);
+
         this.itemsFactura = res.itemsFactura;
         this.totales = res.totales;
+        console.log("itemss", this.itemsFactura);
       });
   }
 
@@ -433,14 +465,14 @@ export class FacturarComponent implements OnInit {
     this.editar = true;
   }
   aplitChangueItem() {
-    console.log('formulario', this.invSucursalForm);
+
     let i = this.itemsFactura.indexOf(this.invSucursalSeleccionado);
     this.itemsFactura[i].cantidad_item = this.invSucursalForm.value.cantidad_item;
     this.itemsFactura[i].parametros = [];
     for (let index = 0; index < this.getParametros.length; index++) {
       this.itemsFactura[i].parametros.push(this.getParametros.value[index]);
     }
-    console.log('posicion', i);
+
     this.calcularPreciosItemsFactura();
 
     this.table_items.nativeElement.scrollIntoView(true);
@@ -451,7 +483,6 @@ export class FacturarComponent implements OnInit {
   cambiarItems() {
     this.itemsFactura.forEach(element => {
       if (element.id_grupo === this.invSucursalSeleccionado.id_grupo && element.esCambio) {
-        console.log("entor1siiii");
         element.Componentes = this.invSucursalSeleccionado.Componentes;
         element.cambio = this.invSucursalSeleccionado.cambio;
         element.esCambio = false;
@@ -474,7 +505,7 @@ export class FacturarComponent implements OnInit {
         } else if (!this.invSucursalForm.value.instalado) {
           element.vr_venta = this.invSucursalSeleccionado.vr_venta_local;
         }
-        console.log(element);
+
       }
     });
     this.esCambio = false;
@@ -492,10 +523,8 @@ export class FacturarComponent implements OnInit {
   }
   guardarFactura(esCotizacion) {
     if (!this.validarFormularios(esCotizacion)) {
-      console.log("no es valido");
       return;
     }
-    console.log("esValido");
     let id_factura = null;
 
     let datosGenerales = {
@@ -507,24 +536,22 @@ export class FacturarComponent implements OnInit {
       antEsCotizacion: this.esCotizacion,
       esCotizacion: esCotizacion
     };
-    console.log("esCo", esCotizacion, "ant", this.esCotizacion);
+
     if (this.facturaSeleccionada) {
       datosGenerales.id_factura = this.facturaSeleccionada.id_factura;
       datosGenerales.items_factura = this.facturaSeleccionada.items;
     }
     this._finFacturaService.guardarFactura(this.clienteSeleccionado.id_cliente, this.itemsFactura, datosGenerales)
       .subscribe((res: any) => {
-        console.log('save recib', res);
-        //this.router.navigate(['facturar/' + res.result]);
+
         this.redirectTo('facturar/' + res.result);
-        //this.ngOnInit();
+
       });
   }
   obtenerFactura(id_factura) {
 
     this._finFacturaService.obtenerFactura(id_factura)
       .subscribe(async (res: any) => {
-        console.log('consult factura for id', res);
         this.facturaSeleccionada = res.result;
         this.clienteSeleccionado = new CliCliente(
           this.facturaSeleccionada.CliCliente.direccion,
@@ -541,10 +568,15 @@ export class FacturarComponent implements OnInit {
         this.selectEvent(this.clienteSeleccionado, 1);
         this.itemsFactura = Object.assign(this.itemsFactura, this.facturaSeleccionada.items);
         this.totales = this.facturaSeleccionada.totales;
+        this.facturaSeleccionada.saldo = parseFloat(this.facturaSeleccionada.saldo);
+        this.facturaSeleccionada.total = parseFloat(this.facturaSeleccionada.total);
         if (this.facturaSeleccionada.estado === 'COTIZACION') { this.esCotizacion = true; }
+        if (this.facturaSeleccionada.estado === 'CANCELADO(A)' || this.facturaSeleccionada.estado === 'ELIMINADO(A)') { this.noEditar = true; }
         this.selectEvent({
-          abono: parseFloat((parseFloat(this.facturaSeleccionada.total)
-            - parseFloat(this.facturaSeleccionada.saldo)).toFixed(2))
+          abono: parseFloat((this.facturaSeleccionada.total
+            - this.facturaSeleccionada.saldo).toFixed(2)),
+          transporte: parseInt(this.facturaSeleccionada.transporte),
+          descuento: parseInt(this.facturaSeleccionada.descuento)
         }, 3);
 
       });
@@ -578,9 +610,10 @@ export class FacturarComponent implements OnInit {
     }
     data.push(["", "", "TOTAL", Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.total)]);
     arrayData.push(data);
-    console.log(arrayData);
 
+    let y = 0;
     for (let index = 0; index < arrayData.length; index++) {
+      y = 0;
       pdf.add(await new Img('../../../assets/images/marca_agua_doc.png').height(500).width(300).relativePosition(100, 100).build());
       pdf.add(await new Img('../../../assets/images/logo_fac.png').height(80).width(250).relativePosition(0, 0).build());
       if (!this.esCotizacion) {
@@ -607,9 +640,13 @@ export class FacturarComponent implements OnInit {
         new Txt('CELULAR: ' + this.facturaSeleccionada.CliCliente.celular).bold().italics().fontSize(10).relativePosition(260, 55).end
       );
       pdf.add(
-        new Txt('CELULAR: ' + this.facturaSeleccionada.CliCliente.celular).bold().italics().fontSize(10).relativePosition(260, 55).end
+        new Txt('ESTADO: ' + this.facturaSeleccionada.estado).bold().italics().fontSize(10).relativePosition(260, 65).end
       );
-
+      if (!this.esCotizacion) {
+        pdf.add(
+          new Txt('SALDO: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.facturaSeleccionada.saldo)).bold().italics().fontSize(10).relativePosition(260, 75).end
+        );
+      }
 
       if (index == arrayData.length - 1) {
 
@@ -622,43 +659,76 @@ export class FacturarComponent implements OnInit {
           new Table(arrayData[index]).widths(['auto', '*', 'auto', 'auto']).relativePosition(0, 105).pageBreak("after").end
         );
       }
-
+      y = arrayData[index].length * 20 + 105
     }
-    let y = 0;
-    if (arrayData[arrayData.length - 1].length > 25) {
+    if (y >= 708) {
       pdf.add(
         new Txt('').bold().italics().fontSize(20).relativePosition(0, y).pageBreak("after").end
       );
-    } else {
-      y = arrayData[arrayData.length - 1].length * 20 + 105;
+      y = 0;
     }
     pdf.add(
-      new Txt('SUBTOTAL: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.sub_total) + 'VR TRANSPORTE: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.transporte) + ' VR DESCUENTO[' + this.facturaSeleccionada.descuento + '%] ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.vr_descuento) + ' TOTAL: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.total)).bold().italics().fontSize(10).relativePosition(0, y).end
+      new Txt('RESUMEN DE PAGO').bold().italics().fontSize(12).relativePosition(0, y).color('#143d69').end
     );
-    console.log("aarrra", arrayData[arrayData.length - 1].length);
+    y = y + 12;
+    pdf.add(
+      new Txt('Subtotal:').bold().italics().fontSize(10).relativePosition(0, y).end
+    );
+    pdf.add(
+      new Txt(new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.sub_total)).bold().italics().fontSize(10).relativePosition(100, y).end
+    );
+    y += 12;
+    pdf.add(
+      new Txt('Descuento [' + this.facturaSeleccionada.descuento + '%]: ').bold().italics().fontSize(10).relativePosition(0, y).end
+    );
+    pdf.add(
+      new Txt(new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.vr_descuento)).bold().italics().fontSize(10).relativePosition(100, y).end
+    );
+    y += 12;
+    pdf.add(
+      new Txt('Transporte: ').bold().italics().fontSize(10).relativePosition(0, y).end
+    );
+    pdf.add(
+      new Txt(new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.transporte)).bold().italics().fontSize(10).relativePosition(100, y).end
+    );
+    y += 12;
+    pdf.add(
+      new Txt('TOTAL: ').bold().italics().fontSize(10).relativePosition(0, y).color('#9f182f').end
+    );
+    pdf.add(
+      new Txt(new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(this.totales.total)).color('#9f182f').bold().italics().fontSize(10).relativePosition(100, y).end
+    );
+    y += 15;
+
     if (this.facturaSeleccionada.FinAboFacs.length > 0) {
 
-
-      if (arrayData[arrayData.length - 1].length > 25) {
+      if (y > 760) {
+        y = 0;
         pdf.add(
-          new Txt('ABONOS').bold().italics().fontSize(20).relativePosition(0, y).pageBreak("before").end
+          new Txt('ABONOS').bold().italics().fontSize(12).relativePosition(0, y).pageBreak("before").color('#096b25').end
         );
       } else {
-        y = arrayData[arrayData.length - 1].length * 20 + 105;
-        console.log("uyyyyyyyyyy", y);
+
         pdf.add(
-          new Txt('ABONOS').bold().italics().fontSize(20).relativePosition(0, y).end
+          new Txt('ABONOS').bold().italics().fontSize(12).relativePosition(0, y).color('#096b25').end
         );
       }
-      y = y + 20;
+      y = y + 12;
       let deuda = this.facturaSeleccionada.total;
       for (const element of this.facturaSeleccionada.FinAboFacs) {
         let fec_abo = new Date(element.fec_abono);
+        if (y >= 758) {
+          pdf.add(
+            new Txt('').bold().italics().fontSize(20).relativePosition(0, y).pageBreak("after").end
+          );
+          y = 0;
+        }
         pdf.add(
           new Txt(
             'Fecha: ' + fecha.getDate() + '-' + fecha.getMonth() + '-' + fecha.getFullYear() + " " +
             'Deuda: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(deuda) + " " +
-            'Pago: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(element.pago) + " " +
+            'Efectivo: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(element.pago) + " " +
+            'Abono: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(element.abono) + " " +
             'Regreso: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(element.regreso) + " " +
             'Saldo: ' + new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(element.saldo)
           ).bold().italics().fontSize(10).relativePosition(0, y).end
@@ -672,7 +742,7 @@ export class FacturarComponent implements OnInit {
   }
 
   mostrarModalPago() {
-    console.log("creating abono");
+
 
     this.pagoForm = new FormGroup({
       abono: new FormControl(0, [Validators.pattern('^[0-9]+$'), Validators.required, Validators.min(50), Validators.max(this.facturaSeleccionada.saldo)]),
@@ -683,7 +753,7 @@ export class FacturarComponent implements OnInit {
   }
 
   agregarPagoFacturaId() {
-    console.log("this button ready pago factura");
+
     if (this.pagoForm.invalid || (this.pagoForm.value.pago - this.pagoForm.value.abono) < 0) { return; }
     let abono = {
       id_factura: this.facturaSeleccionada.id_factura,
@@ -692,14 +762,20 @@ export class FacturarComponent implements OnInit {
     }
     this._finFacturaService.agregarPagoFacturaId(abono)
       .subscribe((res: any) => {
-        console.log('save recib', res);
-        //this.router.navigate(['facturar/' + res.result]);
         this.redirectTo('facturar/' + this.facturaSeleccionada.id_factura);
-        //this.ngOnInit();
       });
 
   }
   cerrarModalPago() {
     this.oculto = 'oculto';
+  }
+  ngOnChanges(changes: SimpleChanges) {
+    console.log("camsadfasdfasdf");
+    console.log("cambio",changes.invSucursalSeleccionado.currentValue);
+
+    //this.doSomething(changes.categoryId.currentValue);
+    // You can also use categoryId.previousValue and
+    // categoryId.firstChange for comparing old and new values
+
   }
 }

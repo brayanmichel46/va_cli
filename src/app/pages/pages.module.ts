@@ -27,11 +27,17 @@ import { UsuariosComponent } from './usuarios/usuarios.component';
 import { ModalUploadImagenComponent } from '../components/modal-upload-imagen/modal-upload-imagen.component';
 import { ClientesComponent } from './clientes/clientes.component';
 import { FacturarComponent } from './facturar/facturar.component';
+import { PaginationComponent } from '../components/pagination/pagination.component';
 
 import { AutocompleteLibModule } from 'angular-ng-autocomplete';
 
 import { PdfMakeWrapper } from 'pdfmake-wrapper';
-import pdfFonts from "pdfmake/build/vfs_fonts"; // fonts provided for pdfmake
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import { ListFacturasComponent } from './list-facturas/list-facturas.component';
+import { MatrizMarqueteriaComponent } from './matriz-marqueteria/matriz-marqueteria.component';
+import { ListPreciosComponent } from './list-precios/list-precios.component';
+
+// fonts provided for pdfmake
 
 // Set the fonts to use
 PdfMakeWrapper.setFonts(pdfFonts);
@@ -51,7 +57,11 @@ PdfMakeWrapper.setFonts(pdfFonts);
     UsuariosComponent,
     ModalUploadImagenComponent,
     ClientesComponent,
-    FacturarComponent
+    FacturarComponent,
+    ListFacturasComponent,
+    PaginationComponent,
+    MatrizMarqueteriaComponent,
+    ListPreciosComponent
   ],
   exports: [
     DashboardComponent,

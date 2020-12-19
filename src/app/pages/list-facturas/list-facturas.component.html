@@ -1,0 +1,64 @@
+<div class="row animated fadeIn">
+  <div class="col-md-12 col-sm-12">
+    <div class="card">
+      <div class="card-body">
+        <input #input (keyup)="cambiarDesde('R',input.value,null)" type="text" class="form-control"
+          placeholder="Buscar facturas...">
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row animated fadeIn" *ngIf="cargando">
+  <div class="col-sm-12">
+    <div class="alert alert-warning text-center">
+      <strong>Cargando</strong>
+      <br>
+      <i class="fa fa-refresh fa-spin fa-2x"></i>
+      <br>
+      <strong>Espere por favor</strong>
+    </div>
+  </div>
+</div>
+<div class="row animated fadeIn" *ngIf="!cargando">
+  <div class="col-md-12 col-sm-12">
+    <div class="card">
+      <div class="card-body">
+
+        <h3>Facturas registradas ( <small>{{totalRegistros}}</small> )</h3>
+        <div class="table-responsive m-t-20">
+          <table class="table table-hover">
+            <thead>
+              <th>Factura No</th>
+              <th>Fecha</th>
+              <th>Cliente</th>
+              <th>Cedula</th>
+              <th>Estado</th>
+              <th>Saldo</th>
+              <th>Total</th>
+              <th>Opciones</th>
+            </thead>
+            <tbody>
+              <tr *ngFor="let factura of facturas">
+                <td>{{factura.num_factura}}</td>
+                <td>{{factura.fec_factura | date:'dd-MM-yyyy'}}</td>
+                <td>{{factura.nombre}}</td>
+                <td>{{factura.identificacion}}</td>
+                <td>{{factura.estado}}</td>
+                <td>{{factura.saldo}}</td>
+                <td>{{factura.total}}</td>
+                <td class="text-center">
+                  <button (click)="redirectTo('/facturar/'+factura.id_factura)"  class="btn btn-sm btn-info">
+                    <li class="fa fa-eye fa-lg">
+                      <a routerLinkActive="active" [routerLink]="['/facturar', factura.id_factura]"></a>
+                    </li>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <app-pagination *ngIf="totalRegistros>=0" [numEle]="totalRegistros" [numElePag]="5" (cambiarPagina)="prueba($event,input.value)"></app-pagination>
+      </div>
+    </div>
+  </div>
+</div>
